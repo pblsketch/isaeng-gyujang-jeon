@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-visual">
+  <title>세 번의 담 — 이생규장전</title>
+  <meta name="description" content="학생이 최 씨가 되어 부모의 반대, 전란, 생사의 경계라는 세 번의 담에 맞서는, 김시습 「이생규장전」 바탕의 고등학생용 고전문학 학습 게임">
+  <meta name="author" content="박준일(온양여자고등학교 국어 교사)">
+  <meta name="theme-color" content="#1c2646">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="세 번의 담">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231c2646'/%3E%3Cpath d='M4 22h24v4H4z' fill='%23b3342a'/%3E%3Cpath d='M4 17h24v4H4z' fill='%23d9c7a2'/%3E%3Ccircle cx='22' cy='9' r='4' fill='%23f2a541'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/wall.css">
+  <link rel="stylesheet" href="css/hon.css">
+  <link rel="stylesheet" href="css/okru.css">
+  <link rel="stylesheet" href="css/finale.css">
+  <link rel="stylesheet" href="css/result.css">
+</head>
+<body>
+  <div id="app"><p style="padding:24px">불러오는 중…</p></div>
+  <noscript><p style="padding:24px">이 게임은 자바스크립트가 필요해요.</p></noscript>
+
+  <!-- 엔진 바닥 -->
+  <script src="js/core/util.js"></script>
+  <script src="js/core/save.js"></script>
+  <script src="js/core/audio.js"></script>
+  <script src="js/core/ui.js"></script>
+  <script src="js/core/hud.js"></script>
+  <!-- 엔진 -->
+  <script src="js/game/steps.js"></script>
+  <script src="js/game/rules.js"></script>
+  <script src="js/game/tiles.js"></script>
+  <script src="js/game/world.js"></script>
+  <script src="js/game/app.js"></script>
+  <!-- 이 게임의 화면(각 작업이 채운다) -->
+  <script src="js/game/wall.js"></script>
+  <script src="js/game/blank.js"></script>
+  <script src="js/game/hon.js"></script>
+  <script src="js/game/tasks.js"></script>
+  <script src="js/game/okru.js"></script>
+  <script src="js/game/finale.js"></script>
+  <script src="js/game/result.js"></script>
+  <!-- 자료(선생님이 고쳐도 되는 파일) -->
+  <script src="js/data/flow.js"></script>
+  <script src="js/data/people.js"></script>
+  <script src="js/data/sprites.js"></script>
+  <script src="js/data/bgm.js"></script>
+  <script src="js/data/texts.js"></script>
+  <script src="js/data/notes.js"></script>
+  <script src="js/data/credits.js"></script>
+  <script src="js/data/walls.js"></script>
+  <script src="js/data/cards.js"></script>
+  <script src="js/data/okru.js"></script>
+  <script src="js/data/finale.js"></script>
+  <!-- 거점 -->
+  <script src="js/data/places/prologue.js"></script>
+  <script src="js/data/places/act1.js"></script>
+  <script src="js/data/places/act2.js"></script>
+  <script src="js/data/places/act2night.js"></script>
+  <script src="js/data/places/act3.js"></script>
+  <script src="js/data/places/epilogue.js"></script>
+  <!-- 시작 -->
+  <script src="js/main.js"></script>
+</body>
+</html>
