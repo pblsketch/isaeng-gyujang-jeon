@@ -1,0 +1,16 @@
+# 기획 문서(design/, .dryforge/)는 저장소가 비공개인 동안만 올린다.
+# 공개로 바꾸기 전에 기록에서까지 지워야 한다(교과서 쪽수 등).
+# 도구 상태
+.omc
+.claude
+# 점검 도구 의존성과 결과물
+node_modules
+tests/node_modules
+tests/shots
+# 그림·소리·글꼴 원본(게임은 가공본만 쓴다)
+assets/raw
+tools/fonts_src
+tools/music_src
+tools/voice_cache
+__pycache__
+*.log
