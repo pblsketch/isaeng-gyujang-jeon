@@ -4,7 +4,7 @@
 
 ## 맡는 것
 - `steps.js`: 단계 실행기(`G.steps.register/run`), 조건(`conds`)·효과(`effects`)·줄 종류(`lineKinds`), 기본 단계 `say`·`choice`·`card`, 표시 칩 `G.steps.mark(표시)`, 원문+풀이 `G.steps.quote({ han, ko, src, fold })`, 카드 한 장 `cardMoment`·`infoCard`, 한 줄 쓰기 `G.steps.writeLine(ctx, o)`.
-- `rules.js`: 규칙의 바닥 — 한 번만 반영 장부(`onceOn`·`applyStep`·`applied`), 종류별 규칙 자리 `G.rules.stepRules`, 새로고침 대비(`snapKeys`에 `applied`), 거점 기록과 `attach`. **이 게임의 규칙(T3)은 이 파일에 더한다.**
+- `rules.js`: 규칙의 바닥(한 번만 반영 장부 `onceOn`·`applyStep`·`applied`, 종류별 규칙 자리 `G.rules.stepRules`, 새로고침 대비 `snapKeys`에 `applied`, 거점 기록과 `attach`)과 이 게임의 규칙(아래 '규칙(G.rules)' 절).
 - `tiles.js`·`world.js`: 코드로 그리는 땅 타일과 테마, 탑다운 맵(카메라·충돌·조이스틱·말 걸기·목표 진행·대화창·맵 사이 입구), 지금 할 일의 위치 표시(은은한 빛·가장자리 화살표), 순서 없는 할 일·열림 조건·되풀이 구역, 바깥에서 부르는 `G.world.waitGoal`, 시험 손잡이 `G.world.test`.
 - `app.js`: 화면 흐름(타이틀 '시작'/'이어 하기'·'처음부터' → 거점 차례 → 끝), 사건 화면, 단계 실행(`runSteps`), 거점 첫 장, '준비 중' 거점, 설정(글자 크기 3단계·배경음·움직임 줄이기·전체 화면), 가로 안내, 전체 화면 `G.app.fs`, 걸이 `G.app.hooks.credits/finish`, 그림 내려받기 `downloadCanvas`.
 - `result.js`: 결과 화면 틀 `G.result`(같은 그리기 함수 `draw(pen, D)`로 화면 SVG와 저장 캔버스). 내용은 T7이 채운다.
@@ -20,7 +20,7 @@
 - **넘지 않는 선**: 점수·등급·순위·시간 제한·게임 오버를 어떤 화면에도 두지 않는다. 게이지·선생님 단추·방식 고르기·수첩을 되살리지 않는다(`tests/check-smoke.mjs`가 본다). 바깥 주소로 요청하지 않는다(SVG 이름공간 문자열만 예외).
 - **규칙은 순수 함수 한 벌**: 상태를 바꾸는 규칙은 `…On(st, …)` 꼴로 평범한 객체에 대해 짠다. 화면 코드 안에서 기록을 직접 고치지 말고 규칙 함수를 부른다.
 - **한 번만 반영**: 단계 효과는 `G.rules.applyStep(step, { place, decision })`로 적용한다. 열쇠는 `s:거점:단계`. 같은 열쇠로 두 번 적용되지 않는다.
-- **확정 기록과 되돌리기**: 단계 도중 새로고침하면 `runSteps`가 `G.save.snapKeys`(지금 `flags`·`applied`)를 단계 시작 값으로 되돌리고 그 단계를 다시 펼친다. 반응을 본 시도(수단·빈칸 카드·제안의 답·만복사 고르기)는 그 자리에서 확정하고, 그 칸(`G.save.COMMITTED`: walls·propose·blanks·tasks·border·hon·mind·lines·jeongiScene·mbs·skipped·name)은 **snapKeys에 넣지 않는다**. 같은 시도가 두 번 들어가지 않게 시도 번호(`n`)를 둔다.
+- **확정 기록과 되돌리기**: 단계 도중 새로고침하면 `runSteps`가 `G.save.snapKeys`(지금 `flags`·`applied`)를 단계 시작 값으로 되돌리고 그 단계를 다시 펼친다. 반응을 본 시도(수단·빈칸 카드·제안의 답·만복사 고르기)는 그 자리에서 확정하고, 그 칸(`G.save.COMMITTED`: walls·propose·blanks·tasks·border·hon·mind·lines·jeongiScene·mbs·skipped·name·words)은 **snapKeys에 넣지 않는다**. 같은 시도가 두 번 들어가지 않게 시도 번호(`n`)를 둔다.
 - 등록되지 않은 단계 종류·비어 있는 거점·없는 걸이는 오류 없이 '준비 중'으로 넘긴다. 단계 함수가 던지면 `runSteps`가 오류 카드를 보이고 다음으로 넘어간다.
 - `app.play`·`app.next`를 감쌀 때는 원래 함수를 반드시 부른다(`G.rules.attach`가 이미 감싼다).
 - 대화창을 닫은 뒤 300ms(`W.closedAt`) 동안 E·Enter·Space·Z를 말 걸기로 받지 않는다.
@@ -30,6 +30,33 @@
 - **한 줄 쓰기는 `G.ui.writeField`(또는 `G.steps.writeLine`)만 쓴다**: 화면 키보드가 보이는 화면을 줄여도(가로 높이 320~390px) 입력 칸과 완료 단추가 함께 보이게 보이는 화면 맨 아래에 붙는다(`.wf-docked`). 빈칸이면 넘어가지 않는다(required).
 - 그림은 아직 없다(spec 13절): 그림 목록(`window.ART`)에 없는 그림을 요청하지 않는다. 사람은 단색 사람 모양, 소품은 `SPRITES`의 `shape`, 삽화 자리는 빈 종이 판.
 - 화면은 그림책풍 미술 방향(전체 화면 맵 + 구석 HUD, 사건 화면은 삽화 + 한지 판 + 엄지 자리 트레이)을 따른다.
+
+## 규칙(G.rules) — 화면이 부르는 함수
+모두 `…(st, …)` 꼴 순수 함수다(`st` = `G.save.state`). 기록을 바꾸는 함수(…On)를 부른 뒤 화면이 `G.save.write()`로 저장한다. 오류는 `{ error:'…' }`로 돌려주고 기록하지 않는다. 자료(`WALLS`·`CARDS`·`FINALE`·`FLOW`·`PLACES`)는 부를 때 읽는다. 점검: `node tests/check-rules.mjs`.
+
+| 함수 | 하는 일 | 저장 칸 |
+| --- | --- | --- |
+| `meansFor(st, 순간)` | 수단 칸 `[{ id, name, locked, used, uses }]`. 혼이 잠겼으면 맨 끝에 `name:null` 잠긴 칸 | 읽기 |
+| `nextAttempt(st, 순간)` | 다음 시도 번호. 고르기 단추를 그릴 때 받아 두고 아래 두 함수에 넘긴다(두 번 눌러도 한 번) | 읽기 |
+| `useMeansOn(st, 순간, 수단, n)` | 수단 쓰기 → `{ n, means, pass, layers, react:[글…], height, recorded }`. 맞지 않으면 반응만(진행 안 막음). 통과한 순간·이미 있는 번호는 다시 안 적음(`recorded:false`). 경계는 늘 `pass:false`, 쓰면 `border:true` | `walls`, `border` |
+| `reactionFor(st, 순간, n)` | 시도 n의 반응을 기록에서 다시 구함(새로고침 뒤 같은 반응) | 읽기 |
+| `wallPassed(st, 순간)` · `wallHeight(st, 막)` · `canLeave(순간)` | 통과했나 · 담 높이(그 막의 맞지 않는 시도 + 3막 `stay`, 저장 안 함) · 통과 없는 순간(경계)에서 '돌아서기' | 읽기 |
+| `borderOn(st)` | 경계 앞 순간을 겪음(구역에 들어서면) | `border` |
+| `proposeChoices()` · `answerOn(st, 답, n)` | 제안의 고르기(`stay`·`entrust`, `together`는 없음) · 답하기(`useMeansOn`과 같은 꼴). 첫 답은 `propose[0]` | `propose` |
+| `honOpenOn(st, { walking:true })` | 도적 앞 통과(또는 2막 건너뜀) + 걷기 시작 뒤에만 `open` | `hon` |
+| `wordOn(st, 낱말)` | 낱말 카드 얻기(`fx:{ word }` 효과가 부른다, 한 번만) | `words` |
+| `cardsFor(막)` · `blankOn(st, 빈칸, 카드)` · `blanksDone(st, 막)` | 그 막 빈칸의 카드(앞 막 카드 포함) · 넣기 → `{ ok, final }` 또는 `{ ok:false, reply }`(첫 카드는 `first`에 한 번만, 채운 뒤 안 바뀜) · 다 찼나 | `blanks` |
+| `taskOpen(st, 할 일)` · `taskOn(st, 할 일)` | 열렸나(`burial`은 `treasure`·`bones` 뒤) · 마침 | `tasks` |
+| `act3Goal(st)` · `act3Done(st)` | 지금 할 일 `{ tasks, locked, border, done }`(넷을 마쳤고 경계가 남으면 `border:true`) · 넷 + 경계 | 읽기 |
+| `mindOn(st, 곳)` | 마음 둔 곳(`act3Done` 뒤, 한 번만) | `mind` |
+| `jeongiSceneOn(st, 장면)` · `canWrite(st, 쓰기)` · `lineOn(st, 쓰기, 글)` | 근거 장면 · 쓰기 칸이 열렸나(`jeongi`는 장면 뒤) · 쓰기(빈 글이면 `error:'empty'`) | `jeongiScene`, `lines` |
+| `mbsOn(st, 'q1'\|'q2', 보기)` | 사실을 보이기 전에 부른다. 한 번만 → `{ choice, fact, quote }`(맞고 틀림 없음) | `mbs` |
+| `hasProgress(st)` · `shortcutOn(st, 1\|2\|3)` | 기록이 있나(있으면 '이어 하기 / 이 막부터'를 묻는다) · 새로 시작이나 '이 막부터': 앞 막 기록은 두고 그 막부터 기록·장부를 지움, 빈칸 덜 찬 앞 막은 `skipped` + 원작 낱말, 앞 거점은 끝낸 것으로, 3막부터면 혼 열림 | 모두 |
+| `resumePoint(st)` | 이어 하기 지점 `{ place, act, beat, map, spawn }`(걷던 자리는 그 지도의 시작 지점) | 읽기 |
+| `validSave(o)` | 저장 모양 점검. `G.save.valid`로 걸려 깨진 기록이면 처음부터 | — |
+
+- **확정 기록과 되돌리기**: 위 …On이 적는 칸은 `G.save.COMMITTED`이고 `snapKeys`(되돌리기)에 넣지 않는다. 시도(수단·답)는 `applyStep`·`applied` 장부를 거치지 않고 **시도 번호 `n`**으로 한 번만 들어간다 — `applied`는 되돌리기에 들어 있어 단계 도중 새로고침하면 지워지므로, 장부로 막으면 두 번 들어갈 수 있다. 그 밖의 칸은 '한 번 정해지면 그대로'라 다시 불러도 같다. `stepRules.wall`·`propose`는 기록을 읽기만 한다.
+- 담 높이·반응 겹은 저장하지 않고 늘 기록에서 다시 구한다. 화면에 점수·맞음·틀림을 보이지 않는다.
 
 ## 이 폴더의 방식
 - 새 화면이 필요한 단계는 자기 파일에서 `G.steps.register('종류', async (step, ctx) => { … })`로 등록한다. `ctx`: `main`(글 자리), `tray(el)`(아래 트레이), `setScene(id)`, `placeId`, `mode:'event'|'dlg'`, `el`, `preset`. 끝나면 resolve.
