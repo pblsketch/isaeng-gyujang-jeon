@@ -1,3 +1,118 @@
-/* 담 앞 순간 화면(수단 칸, 담 높이, 세계의 반응 세 겹) — T4가 채운다. 지금은 빈 틀.
+/* 담 앞 순간 화면(js/game/wall.js)과 막 끝 빈칸 화면(js/game/blank.js) — 모든 막이 쓴다.
    공용 규칙(css/style.css): 누를 곳 max(44px, …), 크기는 rem(글자 크기 3단계 --fs를 따른다), 움직임은 animation/transition으로만
-   (html.reduce-motion·prefers-reduced-motion이 저절로 멈춘다). 한 줄 쓰기는 G.ui.writeField(.wfield)를 쓴다. */
+   (html.reduce-motion·prefers-reduced-motion이 저절로 멈춘다). 한 줄 쓰기는 G.ui.writeField(.wfield)를 쓴다.
+   담 높이는 보이기만 한다(벌 없음): .wall-stage의 --lv(0~8)만큼 담이 높아진다. 숫자를 보이지 않는다. */
+
+/* ───────── 담 높이 연출(사건 화면 삽화 자리 위쪽) ───────── */
+.wall-stage { position: absolute; z-index: 1; left: 50%; top: max(3.6rem, 58px); transform: translateX(-50%); width: min(30rem, 70%); pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: .3rem; --lv: 0; }
+.ws-scene { position: relative; width: 100%; height: 7.4rem; display: flex; align-items: flex-end; justify-content: center; gap: 1.4rem; border-bottom: 3px solid rgba(251, 246, 234, .35); }
+.ws-wall { position: relative; width: 52%; height: calc(1.6rem + var(--lv) * .62rem); background: linear-gradient(180deg, #a59d90, #857d71); border: 2.5px solid var(--line); border-bottom: 0; border-radius: .2rem .2rem 0 0; box-shadow: inset 0 -.5rem 0 rgba(47, 40, 64, .18); transition: height .55s cubic-bezier(.3, 1.4, .5, 1); }
+.ws-wall .ws-cap { position: absolute; left: -.5rem; right: -.5rem; top: -.75rem; height: .8rem; background: linear-gradient(180deg, #545964, #2b2e35); border: 2px solid var(--line); border-radius: .5rem .5rem .15rem .15rem; }
+.ws-wall .ws-face { position: absolute; inset: .35rem .3rem 0; background: repeating-linear-gradient(0deg, transparent 0 .55rem, rgba(47, 40, 64, .22) .55rem .62rem); }
+.ws-me, .ws-far { position: relative; flex: none; width: 1.1rem; height: 2.4rem; border-radius: .55rem .55rem .2rem .2rem; border: 2px solid var(--line); }
+.ws-me { background: var(--seal); }
+.ws-far { background: var(--history); opacity: .8; }
+.ws-me::before, .ws-far::before { content: ''; position: absolute; left: 50%; top: -.95rem; width: .85rem; height: .85rem; margin-left: -.43rem; border-radius: 50%; background: #e9d3b0; border: 2px solid var(--line); }
+.ws-title { padding: .1rem .9rem; border-radius: 999px; background: var(--plaque); border: 1.5px solid var(--plaque-line); color: var(--hanji); font-weight: 700; font-size: .85rem; }
+.wall-stage.rise .ws-wall { animation: wall-rise .6s ease-out; }
+@keyframes wall-rise { 0% { filter: brightness(1.25); } 40% { transform: translateY(-.2rem); } 100% { filter: none; transform: none; } }
+html.reduce-motion .ws-wall { transition: none; }
+
+/* 맵 위 대화창(dlg)에서 쓰면 글 칸 위에 작게 */
+.dlg .wall-stage { position: static; transform: none; width: 100%; margin: .2rem auto 0; }
+.dlg .ws-scene { height: 4.6rem; }
+
+/* ───────── 수단 칸·답 고르기 ───────── */
+.wall-opts { display: flex; flex-wrap: wrap; gap: .55rem; }
+.wall-opts > .opt { flex: 1 1 8.5rem; min-width: 0; }
+.means-slot .od, .wall-leave .od { font-weight: 400; }
+.means-slot .ot { font-family: var(--brush), var(--serif); font-size: 1.12em; }
+.means-slot.used, .answer-slot.used { border-style: dashed; }
+.used-mark { position: absolute; top: .25rem; right: .45rem; font-size: max(.68em, 11px); font-weight: 700; color: var(--ink-3); letter-spacing: .04em; }
+.means-slot.locked { flex: 0 1 6.5rem; background: repeating-linear-gradient(135deg, #e7dcc4 0 .5rem, #ddd0b4 .5rem 1rem); opacity: 1; border-style: dashed; color: var(--ink-3); align-items: center; padding-left: 1rem; }
+.means-slot.locked::before { display: none; }
+.means-slot.locked .ot { display: none; }
+.means-slot.locked .lock-ic { position: relative; width: 1rem; height: .8rem; margin-top: .45rem; border-radius: .15rem; background: var(--ink-3); }
+.means-slot.locked .lock-ic::before { content: ''; position: absolute; left: .18rem; top: -.5rem; width: .5rem; height: .55rem; border: .14rem solid var(--ink-3); border-bottom: 0; border-radius: .4rem .4rem 0 0; }
+.means-slot.locked .od { font-size: .74em; text-align: center; }
+.wall-leave { flex: 0 1 8rem; background: linear-gradient(180deg, #eef0f6, #dfe3ef); }
+.wall-leave::before { background: var(--night-3); }
+.answer-slot .ot { font-weight: 700; }
+.opt.dim { opacity: .45; }
+
+/* 반응 묶음 */
+.wall-react { margin: .1rem 0 .3rem; }
+.wall-react .para { margin-bottom: .4em; }
+/* 반응 말풍선은 담 앞에서 촘촘하게(얼굴 작게, 이름표를 글과 한 줄에) — 낮은 화면에서도 반응과 수단 칸이 함께 보이게 */
+.wall-react .say, .blank-reply .say { grid-template-columns: 2.4rem 1fr; gap: .55rem; align-items: center; }
+.wall-react .say.me, .blank-reply .say.me { grid-template-columns: 1fr 2.4rem; }
+.wall-react .say .who img, .wall-react .say .who .pxface, .wall-react .face-blank,
+.blank-reply .say .who img, .blank-reply .say .who .pxface, .blank-reply .face-blank { width: 2.4rem; height: 2.4rem; font-size: 1rem; }
+.wall-react .say .bubble .nm, .blank-reply .say .bubble .nm { display: inline-block; margin: 0 .45em .1rem 0; vertical-align: .12em; }
+.wall-react .say.me .bubble .nm, .blank-reply .say.me .bubble .nm { margin: 0 0 .1rem .45em; }
+.wall-react .narr { font-size: 1em; line-height: 1.7; }
+.ws-note { min-height: 1.2em; font-size: .82rem; color: var(--hanji); opacity: 0; }
+.wall-stage.rise .ws-note { animation: note-show 2.8s ease-out forwards; }
+@keyframes note-show { 0% { opacity: 0; } 15%, 75% { opacity: .9; } 100% { opacity: .9; } }
+html.reduce-motion .wall-stage.rise .ws-note { opacity: .9; }
+.wall-together { margin-bottom: .2rem; }
+
+/* ───────── 빈칸: 만남과 이별 표 ───────── */
+.event.blankmode .ev-scroll { max-height: 52vh; }
+.blank-table { margin: .1rem 0 .4rem; border: 2px solid var(--line); border-radius: .8rem; background: rgba(255, 252, 244, .8); overflow: hidden; }
+.bt-title { display: flex; align-items: center; gap: .2rem; padding: .2rem .9rem; background: var(--night); color: var(--lantern-hi); font-weight: 700; font-size: .9rem; letter-spacing: .08em; }
+.bt-row { display: grid; grid-template-columns: 8.2rem 1fr; gap: .2rem .8rem; align-items: baseline; padding: .35rem .9rem; border-top: 1px dashed rgba(47, 40, 64, .25); }
+.bt-row:first-of-type { border-top: 0; }
+.bt-label { font-size: .8em; font-weight: 700; color: var(--ink-2); }
+.bt-label .rchip { display: block; width: max-content; margin-bottom: .15rem; }
+.bt-text { margin: 0; line-height: 1.85; }
+.bt-slot { display: inline-block; min-width: 3.2em; padding: 0 .4em; margin: 0 .1em; border-radius: .35rem; text-align: center; line-height: 1.5; vertical-align: baseline; }
+.bt-slot.filled { background: #fbe7b6; border: 1.5px solid var(--lantern-dk); font-weight: 700; color: var(--ink); }
+.bt-slot.empty, .bt-slot.later { border-bottom: 2px solid var(--ink-3); border-radius: 0; }
+.bt-slot.later { opacity: .55; }
+.bt-slot.active { background: #fff2cf; border: 2px dashed var(--lantern-dk); animation: slot-glow 1.6s ease-in-out infinite; }
+@keyframes slot-glow { 50% { box-shadow: 0 0 0 4px rgba(255, 216, 138, .55); } }
+.bt-p { font-size: .82em; color: var(--ink-3); }
+.blank-reply { margin: .2rem 0; }
+.blank-done { margin: .2rem 0; font-weight: 700; color: var(--ok); }
+.blank-q { margin-top: .3rem; }
+.cards { display: flex; flex-wrap: wrap; gap: .5rem; }
+.cards > .word-card { flex: 1 1 7rem; min-width: 0; align-items: center; text-align: center; padding-left: 1rem; }
+.word-card .ot { font-family: var(--serif); }
+
+/* ───────── 낮은 가로 화면(휴대폰 가로, 높이 360~460px) ───────── */
+@media (max-height: 460px) {
+  .wall-stage { top: max(3.1rem, 50px); gap: .15rem; width: min(26rem, 60%); }
+  .ws-scene { height: 4.6rem; gap: 1rem; }
+  .ws-wall { height: calc(1.1rem + var(--lv) * .38rem); }
+  .ws-me, .ws-far { width: .9rem; height: 1.7rem; }
+  .ws-me::before, .ws-far::before { top: -.8rem; width: .7rem; height: .7rem; margin-left: -.35rem; }
+  .ws-title { font-size: .78rem; }
+  .wall-opts { gap: .4rem; }
+  .wall-opts > .opt { flex-basis: 7rem; padding: .35rem .6rem .35rem 1.1rem; }
+  .means-slot .od, .wall-leave .od { font-size: max(.74em, 11px); line-height: 1.3; }
+  .event.wallmode .ev-scroll { max-height: 34vh; }
+  .event.blankmode .ev-scroll { max-height: 56vh; padding-top: .4rem; }
+  .bt-title { font-size: .8rem; padding: .1rem .8rem; }
+  .bt-row { grid-template-columns: 6rem 1fr; padding: .15rem .7rem; }
+  .bt-label { font-size: .74em; }
+  .bt-text { line-height: 1.5; font-size: .92em; }
+  .bt-slot { line-height: 1.35; }
+  .blank-reply .para { margin-bottom: .2em; }
+  .wall-react .say .who img, .wall-react .say .who .pxface, .wall-react .face-blank,
+  .blank-reply .say .who img, .blank-reply .say .who .pxface, .blank-reply .face-blank { width: 2rem; height: 2rem; }
+  .wall-react .say, .blank-reply .say { grid-template-columns: 2rem 1fr; }
+  .wall-react .say.me, .blank-reply .say.me { grid-template-columns: 1fr 2rem; }
+  .ws-note { font-size: .74rem; }
+  .cards > .word-card { flex-basis: 5.5rem; padding: .3rem .6rem; }
+  .blank-tray .tray-hint, .means-tray .tray-hint, .answer-tray .tray-hint { padding-bottom: .2rem; }
+}
+@media (max-height: 380px) {
+  .ws-title { display: none; }
+  .wall-stage { top: max(2.9rem, 46px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ws-wall { transition: none; }
+  .bt-slot.active { animation: none; }
+}
+html.reduce-motion .bt-slot.active { animation: none; }

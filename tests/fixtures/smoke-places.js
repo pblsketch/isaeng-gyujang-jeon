@@ -36,13 +36,13 @@
       cast: { fx_garden: { hyanga: { who: 'hyanga', x: 34, y: 6, dir: 'left', talk: [['아씨, 무슨 일이세요?']] } } },
       beats: [
         { id: 'b-talk', goal: '향아에게 말을 걸자', talk: 'hyanga', steps: ['s-hello'] },
-        { id: 'b-swing', goal: '그네 쪽으로 가 보자', go: 'swing', steps: ['s-pick', 's-write', 'w1-poem'] },
+        { id: 'b-swing', goal: '그네 쪽으로 가 보자', go: 'swing', steps: ['s-pick', 's-write', 's-later'] },
       ],
       steps: [
         { id: 's-hello', type: 'say', lines: [{ who: 'hyanga', t: '아씨, 담 너머에서 누가 시를 읊어요.' }, { t: '담 너머로 시 한 수가 들려왔다.', mark: '게임 설정' }] },
         { id: 's-pick', type: 'choice', q: '무엇으로 답할까?', options: [{ t: '말' }, { t: '시' }, { t: '결단' }] },
         { id: 's-write', type: 'fxWrite' },
-        { id: 'w1-poem', type: 'wall' },
+        { id: 's-later', type: 'fxNotYet' }, // 등록되지 않은 단계 종류('준비 중'). 'wall'은 1막 작업이 등록했다
       ],
     },
     fx_tasks: {

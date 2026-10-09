@@ -158,7 +158,7 @@ async function writeVisible(page, H) {
   await p.waitForFunction(() => window.__fx.wrote, null, { timeout: 3000 }).catch(() => {});
   const wrote = await p.evaluate(() => window.__fx.wrote);
   c.ok(onDone && wrote === '그대를 기다리겠습니다', `Tab으로 완료 단추, Enter로 마침 (${wrote})`);
-  // 등록되지 않은 단계 종류('wall')는 '준비 중'으로 넘어간다
+  // 등록되지 않은 단계 종류(fxNotYet)는 '준비 중'으로 넘어간다
   await p.waitForSelector('.card.notready', { timeout: 4000 }).catch(() => {});
   const nr = await p.evaluate(() => (document.querySelector('.event.on .card.notready') || {}).textContent || '');
   c.ok(/준비 중/.test(nr), '등록되지 않은 단계는 오류 없이 \'준비 중\'');
