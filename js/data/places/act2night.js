@@ -19,26 +19,36 @@ window.PLACES = window.PLACES || {};
     for (const [k, x, y, rw, rh, c] of ops || []) if (k === 'rect') for (let j = y; j < y + rh; j++) for (let i = x; i < x + rw; i++) if (gr[j] && gr[j][i] != null) gr[j][i] = c;
     return gr.map((r) => r.join(''));
   };
-  // 자리 표시 격자(20×10): 서쪽 행랑채 → 가운데 낭하 → 동쪽 작은 누각. 2막 작업이 실제 집으로 바꾼다.
-  const grid = mk(20, 10, '#', [['rect', 1, 4, 18, 2, '=']]);
+  // 밤의 최 씨 집 격자(24×11, 2막 작업): 서쪽 행랑채 마당 → 가운데 낭하(마루, 위아래 담) → 동쪽 작은 누각 마당.
+  //  난리 뒤라 마당은 풀이 우거졌다(廊廡荒凉). 학생(최 씨의 혼)은 행랑채에서 시작해 낭하를 따라 누각의 이생에게 간다.
+  const grid = mk(24, 11, '#', [
+    ['rect', 1, 1, 6, 9, 'k'], ['dots', 'm', [[1, 1], [2, 8], [5, 9], [6, 1], [1, 9]]],
+    ['rect', 7, 5, 12, 2, '_'],
+    ['rect', 19, 1, 4, 9, 'k'], ['rect', 19, 5, 4, 2, '='], ['dots', 'm', [[22, 1], [19, 9], [22, 9]]],
+  ]);
 
   PLACES.act2night = {
     name: '2막 「전란의 담」 — 밤의 최 씨 집', act: 'act2', year: '그날 밤 이경',
     music: 'night', cover: 'sc_act2night_corridor',
-    map: 'house', spawn: [2, 4, 'right'],
+    map: 'house', spawn: [3, 6, 'right'],
+    // 혼이 열리면 학생의 모습이 비치는 혼(sp_choi_hon)으로 바뀐다(혼으로 걷는 길은 게임 설정)
+    avatar: (st) => (st && st.hon === 'open' ? 'sp_choi_hon' : 'sp_choi'),
     maps: {
       house: {
-        name: '밤의 최 씨 집', grid, spawn: [2, 4, 'right'],
+        name: '밤의 최 씨 집', grid, spawn: [3, 6, 'right'], night: true,
+        // 소품: 행랑채(집), 작은 누각, 마당의 나무
+        props: [['pr_house', 2, 3], ['pr_pavilion', 19, 4], ['pr_tree', 5, 9], ['pr_tree', 21, 9]],
         spots: {
-          wing: { x: 1, y: 4, w: 3, h: 2, name: '행랑채', look: [g('행랑채는 비어 있다. 난리 뒤의 먼지가 쌓였다.', null, '廊廡荒凉')] },
-          corridor: { x: 8, y: 4, w: 4, h: 2, name: '낭하' },
-          pavilion: { x: 16, y: 4, w: 3, h: 2, name: '작은 누각' },
+          wing: { x: 1, y: 4, w: 3, h: 4, name: '행랑채', look: [g('행랑채는 비어 있다. 난리 뒤의 먼지가 쌓였다.', null, '廊廡荒凉')] },
+          corridor: { x: 9, y: 5, w: 6, h: 2, name: '낭하' },
+          pavilion: { x: 19, y: 5, w: 4, h: 3, name: '작은 누각' },
         },
       },
     },
     cast: {
       house: {
-        isaeng: { who: 'isaeng', x: 17, y: 4, dir: 'left' },
+        // 이생은 작은 누각 앞에서 낭하 쪽(서쪽)을 본다 — 다가오는 발소리 쪽
+        isaeng: { who: 'isaeng', x: 20, y: 6, dir: 'left' },
       },
     },
     beats: [
@@ -50,8 +60,9 @@ window.PLACES = window.PLACES || {};
         id: 'n-steps', type: 'say', scene: 'sc_act2night_corridor',
         lines: [
           p('밤이 이경에 가까울 무렵, 엷은 달빛이 대들보에 어렸다.', '將及二更, 月色微吐, 光照屋梁'),
-          w('漸聞廊下, 有跫然之音,', '낭하에서 사박사박 발소리가 조금씩 들려오기 시작했다.'),
-          p('발소리가 한 걸음씩 누각 쪽으로 다가온다.', '自遠而近'),
+          // foot: 발소리 화면 표시(1 멀리 → 2 가까이, js/game/hon.js의 줄 종류). 혼 단계의 걷기 판은 3(바로 곁)
+          Object.assign(w('漸聞廊下, 有跫然之音,', '낭하에서 사박사박 발소리가 조금씩 들려오기 시작했다.'), { foot: 1 }),
+          Object.assign(p('발소리가 한 걸음씩 누각 쪽으로 다가온다.', '自遠而近'), { foot: 2 }),
         ],
       },
       {

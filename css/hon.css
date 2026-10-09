@@ -1,3 +1,66 @@
-/* 혼이 열리는 순간(전기적 요소 표시) — T5가 채운다. 지금은 빈 틀.
+/* 혼이 열리는 순간(js/game/hon.js) — 발소리 표시, 맵 위 걷기 판, 잠긴 칸이 '혼'으로 드러남, 암전.
    공용 규칙(css/style.css): 누를 곳 max(44px, …), 크기는 rem(글자 크기 3단계 --fs를 따른다), 움직임은 animation/transition으로만
-   (html.reduce-motion·prefers-reduced-motion이 저절로 멈춘다). 한 줄 쓰기는 G.ui.writeField(.wfield)를 쓴다. */
+   (html.reduce-motion·prefers-reduced-motion이 저절로 멈춘다). 이 파일의 칸은 보이기만 하는 표시라 누르지 않는다. */
+
+/* ───────── 발소리 표시: 발자국 셋, 가까울수록 많이·크게 ───────── */
+.hon-foot { display: inline-flex; align-items: flex-end; gap: .22rem; vertical-align: middle; margin-right: .5rem; color: var(--night-3, #5b6aa0); }
+.hon-foot .hf { position: relative; display: inline-block; width: calc(.34rem + var(--i) * .12rem); height: calc(.52rem + var(--i) * .18rem); border-radius: 50% 50% 45% 45%; background: currentColor; opacity: .18; transform: rotate(-8deg); }
+.hon-foot .hf:nth-child(even) { transform: translateY(-.28rem) rotate(8deg); }
+.hon-foot .hf.on { opacity: .85; animation: hon-step 1.6s ease-in-out infinite; animation-delay: calc(var(--i) * .35s); }
+.hon-foot .hf-l { margin-left: .3rem; font-size: .76em; font-weight: 700; letter-spacing: .06em; opacity: .8; }
+@keyframes hon-step { 0%, 100% { opacity: .85; } 50% { opacity: .35; } }
+.para.has-foot > .hon-foot { display: flex; margin: 0 0 .25rem; }
+
+/* ───────── 맵 위 걷기 판(누르지 않는 표시, 조이스틱을 막지 않는다) ───────── */
+.hon-panel { position: absolute; z-index: 14; left: 50%; bottom: max(.7rem, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(26rem, calc(100% - 15rem)); min-width: 15rem;
+  display: flex; flex-direction: column; gap: .35rem; padding: .5rem .85rem .6rem; pointer-events: none;
+  border-radius: .9rem; background: linear-gradient(180deg, rgba(26, 35, 68, .9), rgba(18, 24, 50, .9)); border: 1.5px solid var(--plaque-line); color: var(--hanji);
+  box-shadow: 0 6px 18px rgba(8, 10, 26, .4); animation: fadein .3s; }
+.hon-panel * { pointer-events: none; }
+.hon-panel .hp-row { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+.hon-panel .hon-foot { color: var(--lantern-hi); flex: none; margin: 0; }
+.hon-panel .hp-walk { margin: 0; font-size: .92rem; line-height: 1.45; }
+.hon-panel .hp-l { flex: none; font-size: .74rem; font-weight: 700; opacity: .75; }
+
+/* ───────── 수단 칸(보이기만) ───────── */
+.hon-slots { display: flex; flex-wrap: wrap; gap: .35rem; }
+.hon-slot { position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: 2.6rem; height: 2rem; padding: 0 .55rem; border-radius: .55rem;
+  border: 2px solid var(--line); background: #f6eedb; color: var(--ink); font-family: var(--brush), var(--serif); font-size: 1rem; }
+.hon-panel .hon-slot { border-color: rgba(255, 216, 138, .45); background: rgba(244, 234, 211, .14); color: var(--hanji); }
+.hon-slot.locked { border-style: dashed; background: repeating-linear-gradient(135deg, #e7dcc4 0 .45rem, #ddd0b4 .45rem .9rem); }
+.hon-panel .hon-slot.locked { background: repeating-linear-gradient(135deg, rgba(231, 220, 196, .3) 0 .45rem, rgba(221, 208, 180, .15) .45rem .9rem); }
+.hon-slot .lock-ic { position: relative; display: block; width: .9rem; height: .7rem; margin-top: .4rem; border-radius: .15rem; background: currentColor; opacity: .7; }
+.hon-slot .lock-ic::before { content: ''; position: absolute; left: .16rem; top: -.46rem; width: .44rem; height: .5rem; border: .13rem solid currentColor; border-bottom: 0; border-radius: .4rem .4rem 0 0; }
+.hon-slot.open { border-color: var(--seal); background: linear-gradient(180deg, #fff6e3, #f3e2c4); box-shadow: 0 0 0 3px rgba(179, 52, 42, .18), 0 0 18px rgba(255, 216, 138, .55); }
+.hon-slot.open .lock-ic { display: none; }
+.hon-slot.open .hon-name { font-size: 1.25rem; color: var(--seal); }
+/* 열리는 움직임: 자물쇠가 사라지고 이름이 떠오른다(움직임 줄이기면 바로 열린 모습) */
+.hon-slot.open.fresh .lock-ic { display: block; position: absolute; left: 50%; top: 50%; margin: -.2rem 0 0 -.45rem; animation: hon-unlock .7s ease-out forwards; }
+.hon-slot.open.fresh .hon-name { animation: hon-name 1s ease-out both; }
+.hon-slot.open.fresh { animation: hon-glow 1.2s ease-out both; }
+@keyframes hon-unlock { 0% { opacity: .8; transform: none; } 60% { opacity: .6; transform: translateY(-.4rem) rotate(-20deg); } 100% { opacity: 0; transform: translateY(-.8rem) rotate(-30deg); } }
+@keyframes hon-name { 0%, 40% { opacity: 0; transform: scale(.6); } 100% { opacity: 1; transform: none; } }
+@keyframes hon-glow { 0% { box-shadow: 0 0 0 0 rgba(179, 52, 42, 0); } 60% { box-shadow: 0 0 0 6px rgba(179, 52, 42, .25), 0 0 28px rgba(255, 216, 138, .9); } 100% { box-shadow: 0 0 0 3px rgba(179, 52, 42, .18), 0 0 18px rgba(255, 216, 138, .55); } }
+
+/* ───────── 드러남 카드 ───────── */
+.hon-reveal { display: flex; flex-direction: column; gap: .45rem; }
+.hon-reveal .hr-head { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; }
+.hon-tag { display: inline-block; padding: .1rem .75rem; border-radius: 999px; background: var(--seal); color: #fff6e3; font-weight: 700; font-size: .86rem; letter-spacing: .04em; box-shadow: 0 0 0 2px rgba(255, 246, 227, .5); }
+.hon-reveal.fresh .hon-tag { animation: hon-name .9s ease-out .35s both; }
+.hon-reveal .para { margin: 0; }
+
+/* 사건 화면을 잠시 걷을 때(걷기 판) */
+.event.hon-away, .dlg.hon-away { display: none; }
+
+/* ───────── 암전: 삽화 자리 없이 검은 화면 + 한 줄 ───────── */
+.event.blackout, .event.blackout .ev-art { background: #050507; }
+.event.blackout .ev-art::after { display: none; }
+.event.blackout .ev-art > * { display: none; }
+.blackout-box .para { margin-bottom: .5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hon-foot .hf.on, .hon-slot.open.fresh, .hon-slot.open.fresh .hon-name, .hon-slot.open.fresh .lock-ic, .hon-reveal.fresh .hon-tag, .hon-panel { animation: none; }
+  .hon-slot.open.fresh .lock-ic { display: none; }
+}
+html.reduce-motion .hon-foot .hf.on, html.reduce-motion .hon-slot.open.fresh, html.reduce-motion .hon-slot.open.fresh .hon-name, html.reduce-motion .hon-reveal.fresh .hon-tag, html.reduce-motion .hon-panel { animation: none; }
+html.reduce-motion .hon-slot.open.fresh .lock-ic { display: none; }

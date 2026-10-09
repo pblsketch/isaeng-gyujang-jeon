@@ -20,8 +20,17 @@ window.PLACES = window.PLACES || {};
     for (const [k, x, y, rw, rh, c] of ops || []) if (k === 'rect') for (let j = y; j < y + rh; j++) for (let i = x; i < x + rw; i++) if (gr[j] && gr[j][i] != null) gr[j][i] = c;
     return gr.map((r) => r.join(''));
   };
-  // 자리 표시 격자(30×8): 서쪽에서 동쪽으로 한 방향 길. 2막 작업이 실제 피란길로 바꾼다.
-  const grid = mk(30, 8, '.', [['rect', 0, 0, 30, 2, '#'], ['rect', 0, 6, 30, 2, '#']]);
+  // 피란길 격자(40×9, 2막 작업): 서쪽에서 동쪽으로만 가는 한 방향 길. 갈림길·옆길이 없다(칸 줄마다 걸을 수 있는 칸이 한 덩어리).
+  //  x 1~9   흙길(폭 3)                — 마을을 벗어나는 길. 이생이 앞서 간다.
+  //  x 10~26 긴 풀 들(짙은 풀 m, 폭 5) — 둘레는 덤불(h). 들머리(grass)를 밟으면 이생이 더 앞서 간다.
+  //  x 27~38 산벼랑 길(폭 2)            — 위아래는 바위 절벽(c). 산벼랑(cliff)에 닿으면 도적이 쫓아온다(a2-cliff).
+  //  둘레는 모두 바위 절벽이라 길 밖으로 나가지 못한다. 입구(doors)는 없다.
+  const grid = mk(40, 9, 'c', [
+    ['rect', 10, 1, 17, 1, 'h'], ['rect', 10, 7, 17, 1, 'h'],
+    ['rect', 1, 3, 9, 3, ':'],
+    ['rect', 10, 2, 17, 5, 'm'], ['rect', 10, 4, 17, 1, ':'],
+    ['rect', 27, 4, 12, 2, ':'],
+  ]);
 
   PLACES.act2 = {
     name: '2막 「전란의 담」', act: 'act2', year: '1361 신축년',
@@ -30,20 +39,40 @@ window.PLACES = window.PLACES || {};
     maps: {
       road: {
         name: '피란길', grid, spawn: [2, 4, 'right'],
+        // 소품: 길가 나무, 들의 바위, 산벼랑 아래 바위들(부딪히지 않게 길 밖 절벽 줄에 둔다)
+        props: [
+          ['pr_tree', 3, 2], ['pr_tree', 7, 2], ['pr_tree', 5, 7],
+          ['pr_rock', 15, 1], ['pr_rock', 21, 7],
+          ['pr_rock', 28, 3], ['pr_rock', 32, 3], ['pr_rock', 30, 6], ['pr_rock', 35, 6],
+        ],
         spots: {
-          cliff: { x: 26, y: 2, w: 3, h: 4, name: '산벼랑' },
-          grass: { x: 14, y: 2, w: 4, h: 4, name: '긴 풀 들', look: [g('허리까지 차는 풀이 바람에 눕는다.')] },
+          // 들머리: 긴 풀 들의 폭 전체(밟지 않고는 지나갈 수 없다)
+          grass: { x: 10, y: 2, w: 3, h: 5, name: '긴 풀 들', look: [g('허리까지 차는 풀이 바람에 눕는다.')] },
+          cliff: { x: 27, y: 4, w: 3, h: 2, name: '산벼랑' },
         },
       },
     },
     cast: {
       road: {
-        isaeng: { who: 'isaeng', x: 6, y: 4, dir: 'right' },
+        // 이생은 늘 최 씨보다 앞서 동쪽을 보고 간다(학생은 그 뒷모습을 따라간다)
+        isaeng: { who: 'isaeng', x: 6, y: 3, dir: 'right', talk: [[g('서두르시오. 산벼랑 아래라면 숨을 만하오.', 'isaeng', '生挈家, 隱匿窮崖')]] },
       },
     },
     beats: [
       { id: 'b-intro', auto: true, steps: ['a2-history', 'a2-flee'] },
-      { id: 'b-walk', goal: '피란길을 따라 산벼랑 쪽으로 가자', go: 'cliff', steps: ['a2-cliff'] },
+      // 피란길 걷기(한 방향): 들머리 → 산벼랑. 이생은 걸음마다 더 앞서 간다(사람 자리 바꾸기 show).
+      { id: 'b-walk', goal: '이생을 따라 긴 풀 들로 들어가자', go: 'grass' },
+      {
+        id: 'b-cliff', goal: '피란길을 따라 산벼랑 쪽으로 가자', go: 'cliff', steps: ['a2-cliff'],
+        show: { isaeng: { who: 'isaeng', x: 33, y: 4, dir: 'right' } },
+        say: [g('이생의 걸음이 빨라진다. 그 뒷모습을 놓치지 말자.', null, '生挈家, 隱匿窮崖')],
+      },
+      // 이생이 혼자 달아남: 맵 위에서 뒷모습이 멀어지다 사라진다(학생은 조작하지 않는다)
+      {
+        id: 'b-away', auto: true, inline: true, steps: ['a2-away'],
+        show: { isaeng: { who: 'isaeng', x: 37, y: 4, dir: 'right' } },
+        then: { hide: ['isaeng'] },
+      },
       { id: 'b-caught', auto: true, steps: ['a2-caught', 'w2-bandit', 'a2-rebuke', 'a2-dark', 'a2-era', 'a2-isaeng1', 'a2-isaeng2', 'a2-isaeng3'] },
     ],
     steps: [
@@ -70,6 +99,11 @@ window.PLACES = window.PLACES || {};
           p('이생은 혼자 달음질쳐 빠져나갔다.', '生奔走得脫'),
           g('최 씨는 산벼랑 너머로 멀어지는 이생의 뒷모습을 보았다.'),
         ],
+      },
+      {
+        // 맵 위 작은 창(b-away): 멀어지는 뒷모습을 지도에서 본다
+        id: 'a2-away', type: 'say',
+        lines: [g('이생의 뒷모습이 산벼랑 너머로 멀어져 간다.', null, '生奔走得脫')],
       },
       {
         id: 'a2-caught', type: 'say',
