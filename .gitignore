@@ -14,3 +14,5 @@ tools/music_src
 tools/voice_cache
 __pycache__
 *.log
+# dryforge 작업 폴더(설계 3문서·작업 사본은 이 컴퓨터에만 둔다)
+.dryforge
