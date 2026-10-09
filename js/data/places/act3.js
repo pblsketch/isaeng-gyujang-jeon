@@ -5,7 +5,13 @@
 //   → 넷을 마치고 경계를 한 번 이상 겪으면 → 마음 둔 곳(mind) → 어느 날 저녁(옥루춘 okru) → 이생의 제안(propose, w3-propose)
 //   → epilogue.js(이별, 이생의 죽음 한 줄 + 암전, 맺음, 반복의 뜻).
 //  때 딱지(time): 재회 이튿날 → 장사 뒤 → 서너 해 뒤. 할 일마다 그 일이 일어나는 때를 적는다(after: 마친 뒤 바뀌는 때).
-//  맵 격자·사람 자리는 자리 표시(3막 작업이 고친다).
+//  지도(3막 작업): 세 구역은 입구(doors) 하나씩으로 잇는다. 최 씨 집 ─(남쪽 대문)─ 골짜기와 들 ─(북쪽 산길)─ 오관산 기슭.
+//   할 일은 구역마다 한곳에 모았다: 시(최 씨 집 작은 누각), 재물·유골(들 서쪽 바위 밑과 가운데 들), 장사(오관산 기슭).
+//   보이지 않는 경계는 들의 동쪽 끝(지도 가장자리)에 있는 되풀이 구역이다. 할 일 사이 왕복은 많아야 두 번(tests/check-act3.mjs가 센다).
+//  할 일 목표(b-tasks)는 엔진의 순서 없는 할 일 꼴(js/game/world.js)이고 아래 TASKS에서 만든다. 마친 할 일은 효과 task로 G.rules.taskOn에 확정한다
+//   (장사는 t-burial 단계의 효과로 먼저 확정해 t-after가 '장사 뒤'로 보이게). 효과 taskPath: 넷을 마쳤는데 경계를 겪지 않았으면 경계 가까이로(짧은 길).
+//   b-tasks의 map·spawn은 G.rules.act3Map(지금 기록)을 읽는다: 이어 하기 때 다음 할 일이 한 구역에만 있으면 그 구역에서 시작한다.
+//  때 딱지(거점·맵의 year)는 G.tasks.timeOf(지금 기록)을 읽는다(앞으로만 흐른다). 엔진 없이 읽히면 처음 값.
 window.PLACES = window.PLACES || {};
 (function () {
   const ST = '확인 전';
@@ -21,70 +27,151 @@ window.PLACES = window.PLACES || {};
     for (const [k, x, y, rw, rh, c] of ops || []) if (k === 'rect') for (let j = y; j < y + rh; j++) for (let i2 = x; i2 < x + rw; i2++) if (gr[j] && gr[j][i2] != null) gr[j][i2] = c;
     return gr.map((r) => r.join(''));
   };
+  // 지금 기록으로 정하는 값(엔진 없이 읽힐 때는 처음 값 d)
+  const live = (f, d) => { try { const G0 = window.G; const v = G0 && G0.save && f(G0); return v || d; } catch (e) { return d; } };
+  const TIMES = ['재회 이튿날', '장사 뒤', '서너 해 뒤'];
+  const timeNow = () => live((G0) => G0.tasks && G0.tasks.timeOf && G0.tasks.timeOf(G0.save.state), TIMES[0]);
+  const after = (id) => (st) => !!(st.tasks && st.tasks[id]);
+  const before = (id) => (st) => !(st.tasks && st.tasks[id]);
+
+  // ───────── 지도 ─────────
+  // 최 씨 집(16×12): 담으로 둘린 집, 오른쪽 위 작은 누각(시 주고받기), 남쪽 대문 → 들
+  const homeGrid = mk(16, 12, '.', [
+    ['rect', 0, 0, 16, 1, '#'], ['rect', 0, 1, 1, 11, '#'], ['rect', 15, 1, 1, 11, '#'], ['rect', 0, 11, 16, 1, '#'],
+    ['rect', 7, 11, 2, 1, '='], ['rect', 7, 5, 2, 6, '='], ['rect', 9, 5, 5, 1, '='],
+    ['rect', 2, 8, 3, 2, ','], ['rect', 11, 8, 2, 2, ','],
+  ]);
+  // 골짜기와 들(26×12): 위는 벼랑(가운데 산길 → 오관산), 서쪽 울타리 틈 → 최 씨 집, 서쪽 바위 밑(재물), 가운데 들(유골), 동쪽 끝은 보이지 않는 경계
+  const valleyGrid = mk(26, 12, '.', [
+    ['rect', 0, 0, 26, 1, 'c'], ['rect', 0, 1, 12, 1, 'c'], ['rect', 14, 1, 12, 1, 'c'], ['rect', 12, 0, 2, 1, ':'],
+    ['rect', 0, 1, 1, 11, 'h'], ['rect', 0, 11, 26, 1, 'h'], ['rect', 0, 5, 1, 2, ':'],
+    ['rect', 1, 5, 13, 2, ':'], ['rect', 12, 1, 2, 4, ':'], ['rect', 14, 6, 12, 1, ':'],
+    ['rect', 3, 2, 5, 2, 'm'], ['rect', 9, 7, 7, 3, 'e'], ['rect', 21, 2, 5, 4, 'm'], ['rect', 21, 7, 5, 4, 'm'],
+  ]);
+  // 오관산 기슭(16×12): 둘레는 산비탈, 가운데 빈터(합장할 자리), 남쪽 산길 → 들
+  const mountainGrid = mk(16, 12, 'm', [
+    ['rect', 0, 0, 16, 2, 'c'], ['rect', 0, 0, 1, 12, 'c'], ['rect', 15, 0, 1, 12, 'c'], ['rect', 0, 11, 16, 1, 'c'],
+    ['rect', 7, 11, 2, 1, ':'], ['rect', 7, 6, 2, 5, ':'], ['rect', 5, 3, 6, 3, '.'],
+  ]);
+
+  // ───────── 할 일 넷(spec 6-1) ─────────
+  //  steps는 그 할 일을 마칠 때 펼치는 단계들. map·spot은 그 할 일이 있는 구역과 자리.
+  const TASK_ORDER = ['treasure', 'bones', 'poems', 'burial'];
+  const TASKS = {
+    treasure: { name: '재물 찾기', goal: '골짜기에서 묻어 둔 금은을 찾자', map: 'valley', spot: 'cache', time: '재회 이튿날', steps: ['t-treasure'] },
+    bones: { name: '유골 수습', goal: '들에 버려진 두 집 부모님의 유골을 거두자', map: 'valley', spot: 'field', time: '재회 이튿날', steps: ['t-bones'] },
+    poems: { name: '이생과 시 주고받기', goal: '작은 누각에서 이생과 시를 주고받자', map: 'home', spot: 'pavilion', time: '서너 해 뒤', steps: ['t-poems'] },
+    burial: {
+      name: '장사 지내기', goal: '오관산 기슭에 부모님을 합장하자', map: 'mountain', spot: 'grave', time: '재회 이튿날', after: '장사 뒤',
+      need: ['treasure', 'bones'],
+      locked: g('재물과 부모님의 유골을 먼저 찾아야 장사를 치를 수 있다.', null, '貿金賣財, 各合葬於五冠山麓'),
+      steps: ['t-burial', 't-after'],
+    },
+  };
+  // 보이지 않는 경계: 몇 번이든 들어갈 수 있는 구역. 3막을 마치려면 한 번 이상 겪어야 한다.
+  //  넷을 마쳤는데 아직 겪지 않았으면 path 글과 함께 경계 가까이(spawn)로 옮겨 준다(짧은 길). back은 돌아선 뒤 설 자리.
+  const BORDER = {
+    wall: 'w3-border', map: 'valley', spot: 'edge', spawn: [22, 6, 'right'], back: [22, 6, 'left'],
+    goal: '들 끝, 보이지 않는 경계까지 가 보자',
+    nudge: g('(들 끝에 무언가 있다. 한 번 가 보자.)', 'choi'),
+    path: g('남은 날의 할 일을 모두 마쳤다. 들 끝으로 곧장 이어지는 짧은 길이 보인다.'),
+    leave: g('돌아선다. 남은 날에 할 일이 있다.'),
+  };
 
   PLACES.act3 = {
-    name: '3막 「저승의 담」', act: 'act3', year: '재회 이튿날',
+    name: '3막 「저승의 담」', act: 'act3',
+    get year() { return timeNow(); },
     music: 'act3', cover: 'sc_act3_valley',
-    map: 'home', spawn: [8, 6, 'down'],
-    // 자리 표시 격자 셋. 구역 사이는 입구(gate) 하나로 잇는다.
+    map: 'home', spawn: [8, 7, 'down'],
     maps: {
       home: {
-        name: '최 씨 집', grid: mk(16, 12, '.', [['rect', 0, 0, 16, 1, '#']]), spawn: [8, 6, 'down'],
+        name: '최 씨 집', theme: 'garden', grid: homeGrid, spawn: [8, 7, 'down'],
+        get year() { return timeNow(); },
+        props: [['pr_house', 2, 4], ['pr_pavilion', 10, 3], ['pr_tree', 13, 9], ['pr_flowers', 2, 9]],
         spots: {
-          pavilion: { x: 11, y: 2, w: 3, h: 2, name: '작은 누각' },
-          gate: { x: 7, y: 11, w: 2, h: 1, name: '골짜기로 가는 길', to: ['valley', 2, 5] },
+          pavilion: { x: 10, y: 4, w: 3, h: 1, name: '작은 누각' },
+        },
+        doors: {
+          toValley: { x: 7, y: 11, w: 2, h: 1, to: 'valley', spawn: [2, 6, 'right'], name: '골짜기와 들로' },
         },
       },
       valley: {
-        name: '골짜기와 들', grid: mk(24, 12, '.', []), spawn: [2, 5, 'right'],
+        name: '골짜기와 들', theme: 'village', grid: valleyGrid, spawn: [2, 6, 'right'],
+        get year() { return timeNow(); },
+        props: [['pr_rock', 4, 2], ['pr_rock', 6, 2], ['pr_tree', 17, 3], ['pr_tree', 19, 9], ['pr_tree', 6, 9]],
         spots: {
-          cache: { x: 6, y: 2, w: 2, h: 2, name: '골짜기 바위 밑' },
-          field: { x: 12, y: 7, w: 3, h: 2, name: '버려진 들' },
-          edge: { x: 23, y: 0, w: 1, h: 12, name: '들 끝', repeat: true },
-          home: { x: 0, y: 5, w: 1, h: 2, name: '최 씨 집으로', to: ['home', 8, 10] },
-          gate: { x: 11, y: 0, w: 2, h: 1, name: '오관산 기슭으로', to: ['mountain', 8, 10] },
+          cache: { x: 4, y: 3, w: 3, h: 1, name: '골짜기 바위 밑' },
+          field: { x: 10, y: 7, w: 4, h: 2, name: '버려진 들' },
+          edge: { x: 25, y: 2, w: 1, h: 9, name: '들 끝' },
+        },
+        doors: {
+          toHome: { x: 0, y: 5, w: 1, h: 2, to: 'home', spawn: [7, 10, 'up'], name: '최 씨 집으로' },
+          toMountain: { x: 12, y: 0, w: 2, h: 1, to: 'mountain', spawn: [7, 9, 'up'], name: '오관산 기슭으로' },
         },
       },
       mountain: {
-        name: '오관산 기슭', grid: mk(16, 12, '.', [['rect', 0, 0, 16, 2, '#']]), spawn: [8, 10, 'up'],
+        name: '오관산 기슭', theme: 'village', grid: mountainGrid, spawn: [7, 9, 'up'],
+        get year() { return timeNow(); },
+        props: [['pr_tree', 2, 3], ['pr_tree', 12, 3], ['pr_tree', 3, 8], ['pr_tree', 11, 8]],
         spots: {
-          grave: { x: 7, y: 4, w: 3, h: 2, name: '합장할 자리' },
-          gate: { x: 7, y: 11, w: 2, h: 1, name: '골짜기로', to: ['valley', 11, 1] },
+          grave: { x: 6, y: 4, w: 4, h: 2, name: '합장할 자리' },
+        },
+        doors: {
+          toValley: { x: 7, y: 11, w: 2, h: 1, to: 'valley', spawn: [12, 2, 'down'], name: '골짜기와 들로' },
         },
       },
     },
+    // 사람: 이생은 함께 움직인다(구역마다 곁에 있다). 노복은 장사를 마친 뒤에만 최 씨 집에 돌아와 있다(when).
     cast: {
       home: {
-        isaeng: { who: 'isaeng', x: 12, y: 4, dir: 'down', talk: [[g('오늘은 무엇부터 할까요, 낭자?', 'isaeng')]] },
-        // 장사를 마친 뒤에만 나타난다(3막 작업이 when을 단다)
-        servant: { who: 'servant', x: 4, y: 8, dir: 'up', after: 'burial', talk: [[g('나리, 마님… 무사하셨군요. 저희도 돌아왔습니다.', 'servant', '幹僕之逃生者, 亦自來赴')]] },
+        isaeng: {
+          who: 'isaeng', x: 13, y: 4, dir: 'left',
+          talk: [[
+            Object.assign(g('오늘은 무엇부터 할까요, 낭자?', 'isaeng'), { when: before('burial') }),
+            Object.assign(g('친척과 손님 집의 경사·초상에도 나가지 않기로 했소. 문을 닫고 낭자와 지내겠소.', 'isaeng', '雖親戚賓客賀弔, 杜門不出'), { when: after('burial') }),
+          ]],
+        },
+        servant: { who: 'servant', x: 4, y: 7, dir: 'right', after: 'burial', when: after('burial'), talk: [[g('나리, 마님… 무사하셨군요. 저희도 돌아왔습니다.', 'servant', '幹僕之逃生者, 亦自來赴')]] },
+      },
+      valley: {
+        isaeng: {
+          who: 'isaeng', x: 4, y: 7, dir: 'up',
+          talk: [[
+            g('낭자가 말한 곳이 여기로구려. 바위 밑과 저 들이오.', 'isaeng', '與生俱往尋瘞處'),
+            g('들 끝은 어쩐지 서늘하오. 저 너머로는 길이 보이지 않소.', 'isaeng'),
+          ]],
+        },
+      },
+      mountain: {
+        isaeng: { who: 'isaeng', x: 11, y: 6, dir: 'left', talk: [[g('부모님을 모시기에 이만한 자리가 없겠소.', 'isaeng', '各合葬於五冠山麓')]] },
       },
     },
-    // 할 일 넷(spec 6-1). steps는 그 할 일을 마칠 때 펼치는 단계들.
-    tasks: {
-      treasure: { name: '재물 찾기', goal: '골짜기에서 묻어 둔 금은을 찾자', map: 'valley', spot: 'cache', time: '재회 이튿날', steps: ['t-treasure'] },
-      bones: { name: '유골 수습', goal: '들에 버려진 두 집 부모님의 유골을 거두자', map: 'valley', spot: 'field', time: '재회 이튿날', steps: ['t-bones'] },
-      poems: { name: '이생과 시 주고받기', goal: '작은 누각에서 이생과 시를 주고받자', map: 'home', spot: 'pavilion', time: '서너 해 뒤', steps: ['t-poems'] },
-      burial: {
-        name: '장사 지내기', goal: '오관산 기슭에 부모님을 합장하자', map: 'mountain', spot: 'grave', time: '재회 이튿날', after: '장사 뒤',
-        need: ['treasure', 'bones'],
-        locked: g('재물과 부모님의 유골을 먼저 찾아야 장사를 치를 수 있다.', null, '貿金賣財, 各合葬於五冠山麓'),
-        steps: ['t-burial', 't-after'],
-      },
-    },
-    times: ['재회 이튿날', '장사 뒤', '서너 해 뒤'],
-    // 보이지 않는 경계: 몇 번이든 들어갈 수 있는 구역. 3막을 마치려면 한 번 이상 겪어야 한다.
-    border: {
-      wall: 'w3-border', map: 'valley', spot: 'edge',
-      goal: '들 끝, 보이지 않는 경계까지 가 보자',
-      nudge: g('(들 끝에 무언가 있다. 한 번 가 보자.)', 'choi'),
-      leave: g('돌아선다. 남은 날에 할 일이 있다.'),
-    },
+    tasks: TASKS,
+    times: TIMES,
+    // 할 일 목록 화면(js/game/tasks.js)의 이름표
+    board: { title: '남은 날에 할 일', time: '원작의 때', done: '마침', locked: '아직' },
+    border: BORDER,
     beats: [
-      { id: 'b-morning', auto: true, steps: ['t-arrive'] },
-      { id: 'b-tasks', auto: true, steps: ['t-tasks', 't-treasure', 't-bones', 't-poems', 't-burial', 't-after'] },
+      { id: 'b-morning', auto: true, steps: ['t-arrive', 't-tasks'] },
+      {
+        // 순서 없는 할 일 넷 + 몇 번이든 들어가는 경계. 넷을 마치고 경계를 겪어야 끝난다(finish).
+        id: 'b-tasks',
+        get map() { return live((G0) => G0.rules && G0.rules.act3Map && G0.rules.act3Map(G0.save.state).map, 'home'); },
+        get spawn() { return live((G0) => G0.rules && G0.rules.act3Map && G0.rules.act3Map(G0.save.state).spawn, null); },
+        goal: (st) => '할 일: ' + TASK_ORDER.filter((id) => !(st.tasks && st.tasks[id])).map((id) => TASKS[id].name).join(' · '),
+        tasks: TASK_ORDER.map((id) => {
+          const t = TASKS[id];
+          return Object.assign({ id, at: t.spot, steps: t.steps, label: t.name, fx: { task: id, taskPath: true } },
+            t.need ? { need: (st) => t.need.every((n) => !!(st.tasks && st.tasks[n])), lockHint: [t.locked] } : {});
+        }),
+        repeat: [{ id: 'border', go: BORDER.spot, steps: ['t-border'], back: BORDER.back }],
+        finish: (st) => st.border === true,
+        finishGoal: BORDER.goal,
+        // 아래 단계들은 할 일·경계가 펼친다(목표가 끝날 때는 모두 끝나 있다)
+        steps: ['t-treasure', 't-bones', 't-poems', 't-burial', 't-after', 't-border'],
+      },
       { id: 'b-mind', auto: true, steps: ['t-mind'] },
-      { id: 'b-evening', goal: '해 질 녘, 작은 누각의 이생에게 가자', talk: 'isaeng', steps: ['t-evening', 't-okru', 't-propose'] },
+      { id: 'b-evening', map: 'home', spawn: [11, 6, 'up'], goal: '해 질 녘, 작은 누각의 이생에게 가자', talk: 'isaeng', steps: ['t-evening', 't-okru', 't-propose'] },
     ],
     steps: [
       {
@@ -119,7 +206,8 @@ window.PLACES = window.PLACES || {};
         ],
       },
       {
-        id: 't-burial', type: 'say', scene: 'sc_act3_burial',
+        // 장사는 이 단계가 끝나면 확정한다(fx.task) — 이어지는 t-after의 때 딱지가 '장사 뒤'
+        id: 't-burial', type: 'say', scene: 'sc_act3_burial', fx: { task: 'burial' },
         lines: [
           p('찾은 금은을 팔아 장례 비용을 마련하고, 두 집 부모를 오관산 기슭에 각각 합장했다. 봉분을 올리고 나무를 심고 제사를 지내며 예법을 빠짐없이 지켰다.', '貿金賣財, 各合葬於五冠山麓, 封樹祭獻, 皆盡其禮'),
           w('各合葬於五冠山麓, 封樹祭獻,', '각각 오관산 기슭에 합장하고, 봉분을 쌓고 나무를 심어 제사를 올렸다.'),
@@ -135,6 +223,8 @@ window.PLACES = window.PLACES || {};
           w('雖親戚賓客賀弔, 杜門不出,', '친척과 손님의 축하나 조문이 있어도, 문을 닫고 나가지 않았다.'),
         ],
       },
+      // 보이지 않는 경계(들 끝에 닿을 때마다 다시 열린다 — 통과가 없는 순간, '돌아서기'로 떠난다)
+      { id: 't-border', type: 'wall', wall: 'w3-border' },
       {
         id: 't-mind', type: 'mind',
         q: g('남은 날 가운데 어디에 마음을 가장 두었나?'),

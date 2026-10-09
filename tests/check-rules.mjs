@@ -401,6 +401,23 @@ if (fails.length) { report(); }
   const r2 = R.resumePoint(s2);
   ok(r2.place === 'act2' && r2.beat === 'b-walk' && r2.map === P.act2.map, '2막 피란길 다음 할 일부터가 아님: ' + JSON.stringify(r2));
   ok(!('pos' in r2) || r2.pos == null, '걷던 자리를 그대로 돌려줌');
+  // 3막: 다음 할 일이 한 구역에만 있으면 그 구역의 시작 지점(경계만 남으면 경계 가까이), 여러 구역에 나뉘면 최 씨 집
+  const A3 = P.act3;
+  const s3 = fresh(); R.shortcutOn(s3, 3); s3.done['b:act3:b-morning'] = true;
+  const at3 = (o) => { const s = clone(s3); Object.assign(s, clone(o)); return R.resumePoint(s); };
+  const r3a = at3({});
+  ok(r3a.place === 'act3' && r3a.beat === 'b-tasks' && r3a.map === A3.map, '3막 할 일이 여러 구역에 남았는데 최 씨 집이 아님: ' + JSON.stringify(r3a));
+  const r3b = at3({ tasks: { treasure: true, bones: true, poems: true } });
+  ok(r3b.map === A3.tasks.burial.map && eq(r3b.spawn, A3.maps[A3.tasks.burial.map].spawn), '장사만 남았는데 오관산 기슭 시작 지점이 아님: ' + JSON.stringify(r3b));
+  const r3c = at3({ tasks: { treasure: true, bones: true, poems: true, burial: true } });
+  ok(r3c.map === A3.border.map && eq(r3c.spawn, A3.border.spawn), '경계만 남았는데 경계 가까이(들)가 아님: ' + JSON.stringify(r3c));
+  const r3d = at3({ tasks: { poems: true } });
+  ok(r3d.map === A3.tasks.treasure.map, '재물·유골만 남았는데 들이 아님: ' + JSON.stringify(r3d));
+  const r3e = at3({ tasks: { treasure: true, bones: true, poems: true, burial: true }, border: true });
+  ok(r3e.map === A3.map, '3막 할 일을 다 마쳤는데 최 씨 집이 아님: ' + JSON.stringify(r3e));
+  const s3f = clone(s3); Object.assign(s3f, { tasks: { treasure: true, bones: true, poems: true, burial: true }, border: true, mind: 'rites' }); s3f.done['b:act3:b-tasks'] = true; s3f.done['b:act3:b-mind'] = true;
+  const r3f = R.resumePoint(s3f);
+  ok(r3f.beat === 'b-evening' && r3f.map === 'home', '어느 날 저녁 이어 하기가 최 씨 집이 아님: ' + JSON.stringify(r3f));
 }
 
 report();

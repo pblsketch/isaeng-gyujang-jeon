@@ -392,8 +392,22 @@
     if (!st.startedAt) st.startedAt = o.now || Date.now();
     return { act, place: st.place, skipped: st.skipped.slice() };
   };
+  // 3막 할 일 목표가 시작할 지도(순수): 남은 할 일이 한 구역에만 있으면 그 구역의 시작 지점,
+  //  넷을 마치고 경계만 남았으면 경계 가까이(border.map·border.spawn — 짧은 길), 여러 구역에 나뉘었거나 다 마쳤으면 거점 지도(최 씨 집).
+  //  거점 자료의 순서 없는 할 일 목표(b-tasks)가 map·spawn으로 이것을 읽는다(엔진 world.play가 이어 하기 지도를 정할 때). → { map, spawn }
+  R.act3Map = function (st) {
+    const P = D().places.act3 || {};
+    const maps = P.maps || {};
+    const at = (m, sp) => ({ map: m || null, spawn: sp || (m && maps[m] && maps[m].spawn) || (m === P.map ? P.spawn : null) || null });
+    const g = R.act3Goal(st);
+    if (g.done) return at(P.map);
+    if (g.border) { const b = P.border || {}; return b.map && maps[b.map] ? at(b.map, b.spawn) : at(P.map); }
+    const ms = uniq(g.tasks.map((id) => (((P.tasks || {})[id]) || {}).map).filter((m) => m && maps[m]));
+    return ms.length === 1 ? at(ms[0]) : at(P.map);
+  };
   // 이어 하기 지점(순수): 끝내지 않은 거점(지금 거점이 먼저)의 끝내지 않은 첫 목표, 그 목표 앞까지 옮겨 온 지도와 그 시작 지점.
   //  걷던 자리는 남기지 않는다(엔진 world.play가 같은 셈으로 그 지도의 시작 지점에 세운다). 목표의 when 조건은 보지 않는다.
+  //  3막의 순서 없는 할 일 목표(tasks가 있는 목표)는 R.act3Map(st)이 정한다(다음 할 일이 한 구역에만 있으면 그 구역).
   //  → { place, act, beat, map, spawn } | { done:true }
   R.resumePoint = function (st) {
     const ord = order(), dn = st.done || {};
@@ -404,7 +418,13 @@
     let start = beats.findIndex((b) => !dn['b:' + place + ':' + b.id]);
     if (start < 0) start = beats.length;
     let map = P.map || null, spawn = P.spawn || null;
-    for (let i = 0; i <= Math.min(start, beats.length - 1); i++) { const b = beats[i]; if (b && b.map && b.map !== map) { map = b.map; spawn = b.spawn || null; } }
+    for (let i = 0; i <= Math.min(start, beats.length - 1); i++) {
+      const b = beats[i];
+      if (!b) continue;
+      // 3막 할 일 목표의 map은 지금 기록(G.save.state)을 읽는 값이라, 여기서는 넘겨받은 st로 다시 구한다
+      const bm = actOf(place) === 'act3' && Array.isArray(b.tasks) ? R.act3Map(st) : { map: b.map, spawn: b.spawn };
+      if (bm.map && bm.map !== map) { map = bm.map; spawn = bm.spawn || null; }
+    }
     if (!spawn && map && P.maps && P.maps[map]) spawn = P.maps[map].spawn || null;
     return { place, act: actOf(place), beat: beats[start] ? beats[start].id : null, map, spawn };
   };
