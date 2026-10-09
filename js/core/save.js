@@ -68,7 +68,8 @@
         const raw = L.getItem(KEY);
         if (raw) {
           const o = JSON.parse(raw);
-          if (o && typeof o === 'object' && !Array.isArray(o)) S = Object.assign(fresh(), o);
+          // 모양 점검(G.save.valid — js/game/rules.js가 단다)에 걸리면 깨진 기록으로 보고 처음부터
+          if (o && typeof o === 'object' && !Array.isArray(o) && (!G.save.valid || G.save.valid(o))) S = Object.assign(fresh(), o);
         }
       } catch (e) { S = fresh(); /* 깨진 기록: 처음부터 */ }
       try {
