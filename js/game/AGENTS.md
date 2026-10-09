@@ -6,7 +6,7 @@
 - `steps.js`: 단계 실행기(`G.steps.register/run`), 조건(`conds`)·효과(`effects`)·줄 종류(`lineKinds`), 기본 단계 `say`·`choice`·`card`, 표시 칩 `G.steps.mark(표시)`, 원문+풀이 `G.steps.quote({ han, ko, src, fold })`, 카드 한 장 `cardMoment`·`infoCard`, 한 줄 쓰기 `G.steps.writeLine(ctx, o)`.
 - `rules.js`: 규칙의 바닥(한 번만 반영 장부 `onceOn`·`applyStep`·`applied`, 종류별 규칙 자리 `G.rules.stepRules`, 새로고침 대비 `snapKeys`에 `applied`, 거점 기록과 `attach`)과 이 게임의 규칙(아래 '규칙(G.rules)' 절).
 - `tiles.js`·`world.js`: 코드로 그리는 땅 타일과 테마, 탑다운 맵(카메라·충돌·조이스틱·말 걸기·목표 진행·대화창·맵 사이 입구), 지금 할 일의 위치 표시(은은한 빛·가장자리 화살표), 순서 없는 할 일·열림 조건·되풀이 구역, 바깥에서 부르는 `G.world.waitGoal`, 시험 손잡이 `G.world.test`.
-- `app.js`: 화면 흐름(타이틀 '시작'/'이어 하기'·'처음부터' → 거점 차례 → 끝), 사건 화면, 단계 실행(`runSteps`), 거점 첫 장, '준비 중' 거점, 설정(글자 크기 3단계·배경음·움직임 줄이기·전체 화면), 가로 안내, 전체 화면 `G.app.fs`, 걸이 `G.app.hooks.credits/finish`, 그림 내려받기 `downloadCanvas`.
+- `app.js`: 화면 흐름(타이틀 '시작'/'이어 하기'·'처음부터' → 거점 차례 → 끝), 바로가기(아래 '흐름(T8)' 절), 사건 화면, 단계 실행(`runSteps`), 거점 첫 장, '준비 중' 거점, 설정(글자 크기 3단계·배경음·움직임 줄이기·전체 화면), 가로 안내, 전체 화면 `G.app.fs`, 걸이 `G.app.hooks.credits/finish`, 그림 내려받기 `downloadCanvas`.
 - `result.js`: 결과 화면 `G.result`(spec 10절 — 기록 한 벌 `record(st)`을 화면 `fill`과 그림 `layers`가 함께 쓰고, 같은 그리기 함수 `draw(pen, D)`로 화면 SVG와 저장 캔버스·PNG), 원전으로 나가는 문 `openDoor()`(대목 모음 `passages()` — 흐름 차례대로 거점·담·옥루춘의 원문+풀이).
 - `finale.js`: 마무리 화면 `G.finale` — 단계 `jeongi`(전기적 요소 한 줄: 2막 장면 다시 보기 → 근거 장면 → 한 줄)·`mbs`(「만복사저포기」: 줄거리 → 두 고르기, 기록 뒤 사실 → 한 줄). `G.app.hooks.finish = G.finale.finish`: 맺음(`FINALE.ui.after`)이 흐름에 있으면 기록이 덜 찬 마무리 화면만 거점 'finale'(단계 `f-jeongi`·`f-mbs`)로 펼친 뒤 결과 화면.
 - 이 게임의 화면: `wall.js`(T4 담 앞 순간·답 고르기 — 아래 절), `blank.js`(T4 빈칸·반복의 뜻), `hon.js`(T5 혼·발소리 줄·암전 — 아래 절), `tasks.js`·`okru.js`(T6).
@@ -87,6 +87,16 @@
 - `tasks.js`는 단계 `blackout`(암전 한 줄, 그림 없음, `quote`+`fold`)을 **다른 파일이 먼저 등록하지 않았을 때만** 등록한다.
 - 모양은 `css/okru.css`(`.task-board`·`.mind-opts`·`.okru-*`·`.event.blackout`). 점검: `node tests/check-act3.mjs`(배치·왕복 셈, 입구와 입구를 가리키는 위치 표시, 장사 잠김, 경계, 이어 하기 지도, 때 딱지, 옥루춘 회상 짝).
 
+## 흐름(T8) — `app.js`·`main.js`·`js/data/flow.js`
+- **차례**: 타이틀 → `FLOW.order`(들어가기 → 1막 → 2막 피란길 → 2막 밤 → 3막 → 맺음) → 맺음이 끝나면 `app.finish` → `hooks.finish`(finale.js: 기록이 덜 찬 마무리 화면만) → 결과 화면. 막 사이 전환은 거점 첫 장(`titleCard`: 막 이름·거점 이름·막 미션 + 표시 칩 '게임 설정')이 맡는다. `app.travel`은 비워 둔다.
+- **타이틀**: 저장 기록이 있으면 '이어 하기 / 처음부터'('처음부터'는 한 번 확인한 뒤 기록과 이름을 지우고 설정은 남긴다 — `G.save.reset`). 이어 하기는 끝내지 않은 거점의 끝내지 않은 첫 목표부터(`app.continue` → `world.play`가 장부를 본다).
+- **바로가기 `?act=1|2|3`**: `main.js`가 `G.boot.routes`에 단다 → `app.title({ act })`. 저장 기록이 없으면 그 막에서 바로 시작하는 단추 하나, 있으면 '이어 하기 / 이 막부터'(글은 `FLOW.shortcut`, `{act}`는 '2막 「전란의 담」'). 다른 값은 보통 타이틀.
+  - `app.startAct(n)`: `G.rules.shortcutOn`으로 기록을 맞춘 뒤(앞 막 기록은 두고 그 막부터 새로, 덜 찬 앞 막은 `skipped` + 원작 낱말, 3막부터면 혼 열림) 건너뛴 막마다 30초 요약 카드를 보이고 그 막의 첫 거점을 연다. 요약 카드는 기록하지 않는다(요약을 보다 닫았다 열면 그 막부터).
+  - 단계 `{ type:'summary', place:'거점 id' }`: 그 거점 자료의 `summary`(`title`·`scene`·`lines`)를 한 장으로(`.summary-card[data-act]`). 요약을 가진 거점은 `app.summaryPlace(막)`.
+- **배경음 배정**: 거점에 들어서면 거점 첫 장부터 그 거점의 `music`(맵이 있는 거점도 첫 장 전에 튼다 — 앞 거점·타이틀의 곡이 남지 않게). 타이틀 `title`, 옥루춘 `okru`(okru.js), 마무리 `farewell`(finale.js), 결과 `result`(result.js). 곡 파일이 없거나 소리를 끄면 소리 없이 끝까지 간다.
+- 선생님용 기능(정답 보기·장면 건너뛰기·선생님 모드)은 두지 않는다.
+- 점검: `node tests/check-flow.mjs`(키보드만·마우스·터치로 각각 처음부터 결과까지, 다시 열기 넷, `?act=2`·`?act=3`, 배경음 배정, 곡 파일을 막음·소리 끔, 세로 안내). 걸린 시간은 `tests/shots/flow/timing.json` → `docs/시범-플레이-시간.md`.
+
 ## 이 폴더의 방식
 - 새 화면이 필요한 단계는 자기 파일에서 `G.steps.register('종류', async (step, ctx) => { … })`로 등록한다. `ctx`: `main`(글 자리), `tray(el)`(아래 트레이), `setScene(id)`, `placeId`, `mode:'event'|'dlg'`, `el`, `preset`. 끝나면 resolve.
 - 새 조건·효과·줄 종류: `G.steps.conds/effects/lineKinds.이름 = …`(예: 낱말 카드 `fx:{ word:'담장' }`은 `G.steps.effects.word`). 종류별 규칙은 `G.rules.stepRules.종류 = (st, step, place, decision) => 결과`.
@@ -96,5 +106,6 @@
 - 결과 화면에 그릴 것을 더하려면 `G.result.layers.push((pen, D, box) => 높이)`, 화면 내용은 `G.result.fill = (bodyEl, st) => { … }`.
 
 ## 점검
+- `node tests/check-flow.mjs`(실제 흐름 처음부터 끝까지, 위 '흐름(T8)' 절).
 - `node tests/check-smoke.mjs`(엔진 틀: 타이틀·설정·맵·위치 표시·걷기 셋·말 걸기·사건 화면·고르기 Tab 차례·쓰기 칸과 화면 키보드·'준비 중'·순서 없는 할 일·열림 조건·되풀이 구역·이어 하기·결과 화면 틀·처음부터·세로 안내·44px·오류·바깥 요청·저장 열쇠). 전체: `node tests/run-all.mjs`.
 - 시험 자료는 `tests/fixtures/smoke-places.js`(실제 거점과 상관없이 엔진만 본다). 엔진의 목표 꼴을 바꾸면 이 자료와 점검도 함께 바꾼다.

@@ -1,6 +1,6 @@
 'use strict';
-// 들어가기 — 송도(맵 없음: 사건 화면으로만 펼친다. 맵 자리가 필요하면 흐름 작업이 더한다)
-//  송도의 두 사람 → 세상 사람들의 칭찬 노래(원문+풀이) → 미션 → 게임 설정 안내(수단과 담, 표시 다섯).
+// 들어가기 — 송도(맵 없음: 사건 화면으로만 펼친다. 흐름 작업(T8)이 맵 없이 두기로 정했다 — spec 3절 '1분', 조작 익히기는 1막 첫머리)
+//  송도의 두 사람 → 세상 사람들의 칭찬 노래(원문+풀이) → 미션 → 게임 설정 안내(수단과 담) → 표시 다섯과 '게임 설정'의 뜻.
 //  글 덩이 꼴은 js/data/AGENTS.md. 원문은 design/sources/wikisource-geumosinhwa-raw.txt에서만.
 window.PLACES = window.PLACES || {};
 (function () {
@@ -14,7 +14,7 @@ window.PLACES = window.PLACES || {};
     name: '들어가기 — 송도', act: 'prologue', year: '고려 말',
     music: 'prologue', cover: 'sc_prologue_songdo',
     beats: [
-      { id: 'b-intro', auto: true, steps: ['p-songdo', 'p-praise', 'p-mission', 'p-means'] },
+      { id: 'b-intro', auto: true, steps: ['p-songdo', 'p-praise', 'p-mission', 'p-means', 'p-marks'] },
     ],
     steps: [
       {
@@ -43,8 +43,16 @@ window.PLACES = window.PLACES || {};
         id: 'p-means', type: 'card',
         card: {
           title: '담과 수단', mark: '게임 설정', src: '게임 설정', status: ST,
-          body: '담 앞에서 말·시·결단 가운데 무엇이든 골라 맞서 보자. 원작의 흐름과 맞으면 담이 낮아지고, 맞지 않으면 그 세상의 사람들이 원작의 논리로 답한다.\n수단 칸 하나는 아직 이름 없이 잠겨 있다.\n글마다 붙은 표시: 원문 · 풀이 · 게임 설정 · 이본 노트 · 해석.',
+          body: '담 앞에서 말·시·결단 가운데 무엇이든 골라 맞서 보자. 원작의 흐름과 맞으면 담이 낮아지고, 맞지 않으면 그 세상의 사람들이 원작의 논리로 답한다.\n수단 칸 하나는 아직 이름 없이 잠겨 있다.',
         },
+      },
+      {
+        // 표시 다섯과 '게임 설정'의 뜻(spec 11절). 원작에 없는 것을 게임이 지었다는 것을 처음에 밝힌다
+        id: 'p-marks', type: 'say', mark: '게임 설정', src: '게임 설정(spec 11절 표시)', status: ST,
+        lines: [
+          g('글마다 표시가 붙는다. 원문 · 풀이 · 게임 설정 · 이본 노트 · 해석.'),
+          g('‘게임 설정’은 원작에 없는 것을 이 게임이 지어낸 것이다. 수단과 담, 낱말 카드, 막마다의 미션이 그렇다. 큰 줄거리와 결말은 원작 그대로다.'),
+        ],
       },
     ],
     scenes: {

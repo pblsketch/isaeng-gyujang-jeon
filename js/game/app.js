@@ -182,6 +182,8 @@
       actName: A.name ? A.name + (A.title ? ' 「' + A.title + '」' : '') : '',
       mission: missionOf(p, p.mission != null ? p.mission : (base.mission != null ? base.mission : A.mission || '')),
       year: p.year || base.year || '',
+      // 막 미션은 이 게임이 지은 말(flow.js의 mark — '게임 설정')
+      missionMark: p.mission != null ? (p.missionMark || null) : base.mission != null ? (base.mark || null) : (A.mark || null),
       ready: !!(window.PLACES || {})[id],
     };
   };
@@ -192,29 +194,45 @@
     closeEvent();
     if (G.world) G.world.busy = 0;
   }
-  app.title = function () {
+  //  o.act(1|2|3): 바로가기 주소(?act=)로 열었을 때(spec 14절) — 저장 기록이 있으면 '이어 하기 / 이 막부터',
+  //   없으면 그 막에서 바로 시작하는 단추 하나. 선생님용 단추(정답 보기·장면 건너뛰기)는 없다.
+  app.title = function (o = {}) {
     ui.unpop();
     leavePlay();
     const F = FL();
     const started = G.save.started();
+    const n = [1, 2, 3].includes(Number(o.act)) ? Number(o.act) : 0;
+    const SC = F.shortcut || {};
+    const A = n ? (F.acts || {})['act' + n] || {} : {};
+    const actLabel = n ? (A.name || n + '막') + (A.title ? ' 「' + A.title + '」' : '') : '';
     G.audio.play(F.titleMusic || 'title');
     const r = root(); r.innerHTML = '';
     r.className = 'scr-title';
     const btn = (label, cls, fn) => h('button.btn' + (cls ? '.' + cls : ''), { type: 'button', on: { click: () => { G.audio.unlock(); fn(); } } }, label);
-    const menu = h('div.menu',
-      started ? btn('이어 하기', 'primary.big', () => app.continue()) : btn('시작', 'primary.big', () => app.newGame()),
-      started ? h('div.menu-row', btn('처음부터', 'dark', () => app.resetAll())) : null,
-      h('div.menu-row', btn('만든 사람·출처', 'dark.small', () => app.openHook('credits'))));
-    r.appendChild(h('div.title-screen',
+    let menu;
+    if (n) {
+      menu = h('div.menu',
+        started ? btn(SC.resume || '이어 하기', 'primary.big', () => app.continue()) : btn(fill(SC.start || '{act}부터 시작', actLabel), 'primary.big', () => app.startAct(n)),
+        started ? h('div.menu-row', btn(SC.from || '이 막부터', 'dark', () => app.startAct(n))) : null,
+        h('div.menu-row', btn('만든 사람·출처', 'dark.small', () => app.openHook('credits'))));
+    } else {
+      menu = h('div.menu',
+        started ? btn('이어 하기', 'primary.big', () => app.continue()) : btn('시작', 'primary.big', () => app.newGame()),
+        started ? h('div.menu-row', btn('처음부터', 'dark', () => app.resetAll())) : null,
+        h('div.menu-row', btn('만든 사람·출처', 'dark.small', () => app.openHook('credits'))));
+    }
+    const hint = n ? fill(started ? (SC.noteSaved || SC.note || '{act} 바로가기') : (SC.note || '{act} 바로가기'), actLabel) : F.hint;
+    r.appendChild(h('div.title-screen' + (n ? '.shortcut' : ''), n ? { 'data-act': String(n) } : {},
       h('div.title-art', { 'aria-hidden': 'true' }),
       h('div.title-main',
         h('div.logo', h('div.pre', F.pre || ''), h('h1', F.title || ''), h('div.sub', F.subtitle || ''), F.tagline ? h('div.tagline', F.tagline) : null),
         h('div.title-side', menu)),
       h('div.title-foot',
-        F.hint ? h('div.hint', h('span.ic', { html: ICON.ear }), F.hint) : h('span'),
+        hint ? h('div.hint', h('span.ic', { html: ICON.ear }), hint) : h('span'),
         h('div.credits-line', h('div.credit.maker', ((window.NOTES || {}).credits || {}).maker || ''))),
       h('div.title-tools', musicToggle(), fs.button(), iconBtn('gear', '설정', () => app.settings()))));
   };
+  const fill = (t, actLabel) => String(t || '').replace('{act}', actLabel);
   function musicToggle() {
     const b = h('button.icon-btn.music-toggle', { type: 'button' });
     const draw = () => { const on = S().music; b.innerHTML = ICON[on ? 'musicOn' : 'musicOff']; b.setAttribute('aria-label', on ? '배경음 끄기' : '배경음 켜기'); b.title = on ? '배경음 끄기' : '배경음 켜기'; b.classList.toggle('off', !on); };
@@ -251,6 +269,51 @@
     ui.toast(R.done || '처음부터 시작할 수 있어요');
     return true;
   };
+
+  // ───────── 바로가기(?act=1|2|3, spec 14절) ─────────
+  //  새로 시작이든 '이 막부터'든 G.rules.shortcutOn이 기록을 맞춘다(앞 막 기록은 두고 그 막부터 새로, 빈칸 덜 찬 앞 막은 건너뜀 + 원작 낱말,
+  //  3막부터면 혼 열림). 건너뛴 막은 30초 요약 카드(거점 자료의 summary)로 차례로 보인 뒤 그 막의 첫 거점을 연다.
+  //  요약 카드는 기록하지 않는다(요약을 보다 닫았다 열면 그 막부터 이어 한다).
+  const ACTS = ['act1', 'act2', 'act3'];
+  app.summaryPlace = (act) => app.order().find((p) => { const P = (window.PLACES || {})[p]; return P && P.act === act && P.summary; }) || null;
+  app.startAct = async function (n) {
+    const st = S();
+    const r = G.rules && G.rules.shortcutOn ? G.rules.shortcutOn(st, n) : { error: 'rules' };
+    if (!r || r.error) return app.title();
+    G.save.write();
+    const token = (app._playToken = {});
+    const acts = (r.skipped || []).filter((a) => ACTS.indexOf(a) >= 0 && ACTS.indexOf(a) < n - 1);
+    if (acts.length) {
+      const info = app.placeInfo(r.place);
+      app.explore(info);
+      blankStage(info.name);
+      const P = (window.PLACES || {})[r.place];
+      if (P && P.music) G.audio.play(P.music);
+      for (const a of acts) {
+        const pid = app.summaryPlace(a);
+        if (!pid) continue;
+        const ctx = app.openEvent({});
+        await G.steps.run({ id: 'summary-' + a, type: 'summary', place: pid }, ctx);
+        ctx.close();
+        if (app._playToken !== token) return;
+      }
+    }
+    if (app._playToken !== token) return;
+    app.play(r.place);
+  };
+  // 단계 { type:'summary', place:'거점 id' } — 그 거점의 30초 요약 카드(summary: { title, scene, lines:[글 덩이] }) 한 장
+  G.steps.register('summary', async function (step, ctx) {
+    const P = (window.PLACES || {})[step.place || ctx.placeId] || {};
+    const sm = P.summary;
+    if (!sm) return G.steps.notReady(step, ctx);
+    if (ctx.setScene) ctx.setScene(sm.scene || null);
+    const SC = FL().shortcut || {};
+    const card = h('div.card.rcard.note.summary-card', { 'data-act': P.act || '' },
+      h('span.kind', SC.kind || '건너뛴 막'),
+      sm.title ? h('h3', G.util.T(sm.title)) : null,
+      ...(sm.lines || []).map((l) => G.steps.line(l, ctx)).filter(Boolean));
+    await G.steps.cardMoment(ctx, card, step.next || SC.next || '다음 ▶');
+  });
 
   // ───────── 놀이 화면 틀(탐색 모드) ─────────
   let playEl = null;
@@ -375,9 +438,9 @@
     const ctx = app.openEvent({ place, scene: place && place.cover });
     ctx.el.classList.add('cardmode');
     ctx.main.appendChild(h('div.place-card',
-      info.actName ? h('div.pc-act', info.actName) : null,
+      info.actName && info.actName !== info.name ? h('div.pc-act', info.actName) : null,
       h('h2.pc-name', info.name),
-      info.mission ? h('div.pc-mission', typeof info.mission === 'function' ? info.mission() : info.mission) : null,
+      info.mission ? h('div.pc-mission', info.missionMark ? G.steps.mark(info.missionMark) : null, typeof info.mission === 'function' ? info.mission() : info.mission) : null,
       place && place.intro ? h('p.pc-intro', boldNodes(place.intro)) : null));
     await G.steps.nextButton(ctx, resumed ? '이어서 ▶' : '펼치기 ▶');
     ctx.close();
@@ -400,6 +463,7 @@
     let ok;
     if (place.map && G.world && G.world.mapDef(place.map)) {
       blankStage();
+      if (place.music) G.audio.play(place.music); // 거점 첫 장부터 그 거점의 곡(앞 거점·타이틀의 곡이 남지 않게)
       await app.titleCard(place, info, resumed);
       if (app._playToken !== token) return;
       ok = await G.world.play(placeId);
