@@ -14,6 +14,14 @@
   document.addEventListener('pointerdown', () => G.audio.unlock(), { passive: true });
   document.addEventListener('keydown', () => G.audio.unlock());
   const q = new URLSearchParams(location.search);
+  // 바로가기 ?act=1|2|3(spec 14절): 그 막의 타이틀(저장 기록이 있으면 '이어 하기 / 이 막부터', 없으면 그 막에서 바로 시작).
+  //  다른 값이면 보통 타이틀. 선생님 모드·장면 건너뛰기 같은 주소는 없다.
+  boot.routes.push((q0) => {
+    const n = Number(q0.get('act'));
+    if (![1, 2, 3].includes(n)) return false;
+    G.app.title({ act: n });
+    return true;
+  });
   // 다른 파일이 바로가기를 더할 틈을 준 뒤(같은 차례로 실린 스크립트가 모두 끝난 다음) 시작한다
   const go = () => {
     for (const r of boot.routes) { try { if (r(q, G.save.state)) return; } catch (e) { console.error(e); } }

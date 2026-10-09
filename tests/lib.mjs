@@ -56,6 +56,9 @@ export async function open(browser, vp, o = {}) {
   page.on('requestfailed', (r) => {
     const u = r.url();
     if (/^blob:/.test(u) || !LOCAL.test(u)) return; // 바깥 요청은 outside에 따로 모은다
+    // 곡을 바꾸거나(거점 첫 장부터 그 거점의 곡 — T8) 다시 열 때 받던 배경음 파일을 끊으면 크롬이 net::ERR_ABORTED를 남긴다.
+    //  게임 오류가 아니라 빼고 센다(배경음 파일만, 끊김만 — 없는 파일·막힌 파일은 그대로 오류로 센다)
+    if (/\/assets\/bgm\/[\w-]+\.mp3$/.test(u) && /ERR_ABORTED/.test((r.failure() || {}).errorText || '')) return;
     errs.push('requestfailed: ' + u + ' ' + ((r.failure() || {}).errorText || ''));
   });
   page.on('response', (r) => { if (r.status() >= 400) errs.push('http ' + r.status() + ': ' + r.url()); });
