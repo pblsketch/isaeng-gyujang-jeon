@@ -53,7 +53,7 @@
 | `jeongiSceneOn(st, 장면)` · `canWrite(st, 쓰기)` · `lineOn(st, 쓰기, 글)` | 근거 장면 · 쓰기 칸이 열렸나(`jeongi`는 장면 뒤) · 쓰기(빈 글이면 `error:'empty'`) | `jeongiScene`, `lines` |
 | `mbsOn(st, 'q1'\|'q2', 보기)` | 사실을 보이기 전에 부른다. 한 번만 → `{ choice, fact, quote }`(맞고 틀림 없음) | `mbs` |
 | `hasProgress(st)` · `shortcutOn(st, 1\|2\|3)` | 기록이 있나(있으면 '이어 하기 / 이 막부터'를 묻는다) · 새로 시작이나 '이 막부터': 앞 막 기록은 두고 그 막부터 기록·장부를 지움, 빈칸 덜 찬 앞 막은 `skipped` + 원작 낱말, 앞 거점은 끝낸 것으로, 3막부터면 혼 열림 | 모두 |
-| `resumePoint(st)` | 이어 하기 지점 `{ place, act, beat, map, spawn }`(걷던 자리는 그 지도의 시작 지점) | 읽기 |
+| `resumePoint(st)` · `act3Map(st)` | 이어 하기 지점 `{ place, act, beat, map, spawn }`(걷던 자리는 그 지도의 시작 지점, 3막 할 일은 `act3Map`) · 3막 할 일이 시작할 지도 `{ map, spawn }` | 읽기 |
 | `validSave(o)` | 저장 모양 점검. `G.save.valid`로 걸려 깨진 기록이면 처음부터 | — |
 
 - **확정 기록과 되돌리기**: 위 …On이 적는 칸은 `G.save.COMMITTED`이고 `snapKeys`(되돌리기)에 넣지 않는다. 시도(수단·답)는 `applyStep`·`applied` 장부를 거치지 않고 **시도 번호 `n`**으로 한 번만 들어간다 — `applied`는 되돌리기에 들어 있어 단계 도중 새로고침하면 지워지므로, 장부로 막으면 두 번 들어갈 수 있다. 그 밖의 칸은 '한 번 정해지면 그대로'라 다시 불러도 같다. `stepRules.wall`·`propose`는 기록을 읽기만 한다.
@@ -70,6 +70,16 @@
 - **3막 끝** `{ id, type:'blank', act:'act3' }` — 표 전체 + `FINALE.repeat`(물음·help) + 한 문장 쓰기(필수, `lineOn('repeat')`).
 - 도우미: `G.blank.josa(낱말, '을'|'이'|'으로'…)`(받침 없으면 를·가·로, ㄹ 받침은 로), `G.blank.fill(표 문장, { 빈칸: 낱말 })`, `G.blank.table(st, { active, keys })`(결과 화면에서 같은 표를 그릴 때). 화면 이름표는 `TEXTS.WALL`·`TEXTS.BLANK`(js/data/texts.js 맨 아래), 모양은 `css/wall.css`.
 - 점검: `node tests/check-act1.mjs`(1막 실제 자료 + `tests/fixtures/walls-places.js`로 경계·답 고르기·반복의 뜻).
+
+## 3막 화면(T6) — `tasks.js`·`okru.js`
+- **할 일 고리는 엔진 것**: 3막 할 일 넷은 거점 자료 `PLACES.act3`의 목표 `b-tasks`(엔진의 순서 없는 할 일 꼴, `world.js` runTasks)가 돈다. `tasks.js`는 고리를 따로 짜지 않는다. 목표의 할 일은 `act3.tasks`에서 만들고, 장사의 `need`는 `st.tasks`(규칙 `taskOpen`과 같은 기록)를 본다. 경계는 `repeat`(되풀이 구역 `edge` → 단계 `t-border` = `{ type:'wall', wall:'w3-border' }`), `finish`는 `st.border`.
+- 단계 `{ type:'tasks', list }`는 **할 일 목록 한 장**(이름·구역·원작의 때·잠김 까닭)이다(`b-morning`에서 고리 앞에 보인다).
+- 효과 `fx:{ task:'burial' }` → `G.rules.taskOn` 확정 + 때 딱지. `fx:{ taskPath:true }` → 넷을 마쳤는데 경계를 안 겪었으면 `G.tasks.openPath()`(border.path·nudge 한 줄과 함께 `border.spawn`, 경계 몇 걸음 앞으로 옮김 = 짧은 길). 장사는 `t-burial` 단계의 fx로 먼저 확정해 `t-after`가 '장사 뒤'로 보인다.
+- 때 딱지 `G.tasks.timeOf(st)`: 재회 이튿날 → 장사 뒤(`tasks.burial`) → 서너 해 뒤(`mind`). 거점·맵의 `year`가 getter로 이것을 읽고, 바뀔 때 `G.tasks.syncTime()`이 HUD를 맞춘다.
+- 이어 하기 지도: `b-tasks`의 `map`·`spawn`은 getter로 `G.rules.act3Map(지금 기록)`을 읽는다(남은 할 일이 한 구역에만 있으면 그 구역, 경계만 남으면 경계 가까이, 아니면 최 씨 집). `R.resumePoint`의 3막 분기도 같은 함수를 넘겨받은 `st`로 부른다.
+- `okru.js`: 단계 `mind`(`mindOn`, 첫 고르기 포커스, 채점 없음)·`okru`(두 구씩 네 대목 + 회상 `G.okru.recallFor(st, '2-3')` — 0-1은 2막을 건너뛰었으면 `default`, 2-3·4-5는 `byMind`, 6-7 고정. 조작 없음, 배경음 `okru` → 끝나면 `G.world.music`).
+- `tasks.js`는 단계 `blackout`(암전 한 줄, 그림 없음, `quote`+`fold`)을 **다른 파일이 먼저 등록하지 않았을 때만** 등록한다.
+- 모양은 `css/okru.css`(`.task-board`·`.mind-opts`·`.okru-*`·`.event.blackout`). 점검: `node tests/check-act3.mjs`(배치·왕복 셈, 입구와 입구를 가리키는 위치 표시, 장사 잠김, 경계, 이어 하기 지도, 때 딱지, 옥루춘 회상 짝).
 
 ## 이 폴더의 방식
 - 새 화면이 필요한 단계는 자기 파일에서 `G.steps.register('종류', async (step, ctx) => { … })`로 등록한다. `ctx`: `main`(글 자리), `tray(el)`(아래 트레이), `setScene(id)`, `placeId`, `mode:'event'|'dlg'`, `el`, `preset`. 끝나면 resolve.
