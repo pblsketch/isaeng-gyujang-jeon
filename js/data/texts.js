@@ -8,9 +8,9 @@ window.TEXTS = window.TEXTS || {};
 
 TEXTS.MARKS = {
   원문: { name: '원문', color: '#b3342a' },
-  풀이: { name: '풀이', color: '#8a5a2b' },
+  풀이: { name: '풀이', color: '#6a5a4a' },
   '게임 설정': { name: '게임 설정', color: '#1f7474' },
-  '이본 노트': { name: '이본 노트', color: '#36548f' },
+  '이본 노트': { name: '이본 노트', color: '#9a6b22' },
   해석: { name: '해석', color: '#6b3f8c' },
 };
 
