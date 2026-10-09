@@ -9,7 +9,7 @@
 - `app.js`: 화면 흐름(타이틀 '시작'/'이어 하기'·'처음부터' → 거점 차례 → 끝), 사건 화면, 단계 실행(`runSteps`), 거점 첫 장, '준비 중' 거점, 설정(글자 크기 3단계·배경음·움직임 줄이기·전체 화면), 가로 안내, 전체 화면 `G.app.fs`, 걸이 `G.app.hooks.credits/finish`, 그림 내려받기 `downloadCanvas`.
 - `result.js`: 결과 화면 `G.result`(spec 10절 — 기록 한 벌 `record(st)`을 화면 `fill`과 그림 `layers`가 함께 쓰고, 같은 그리기 함수 `draw(pen, D)`로 화면 SVG와 저장 캔버스·PNG), 원전으로 나가는 문 `openDoor()`(대목 모음 `passages()` — 흐름 차례대로 거점·담·옥루춘의 원문+풀이).
 - `finale.js`: 마무리 화면 `G.finale` — 단계 `jeongi`(전기적 요소 한 줄: 2막 장면 다시 보기 → 근거 장면 → 한 줄)·`mbs`(「만복사저포기」: 줄거리 → 두 고르기, 기록 뒤 사실 → 한 줄). `G.app.hooks.finish = G.finale.finish`: 맺음(`FINALE.ui.after`)이 흐름에 있으면 기록이 덜 찬 마무리 화면만 거점 'finale'(단계 `f-jeongi`·`f-mbs`)로 펼친 뒤 결과 화면.
-- 이 게임의 화면: `wall.js`(T4 담 앞 순간·답 고르기 — 아래 절), `blank.js`(T4 빈칸·반복의 뜻), `hon.js`(T5 혼), `tasks.js`·`okru.js`(T6).
+- 이 게임의 화면: `wall.js`(T4 담 앞 순간·답 고르기 — 아래 절), `blank.js`(T4 빈칸·반복의 뜻), `hon.js`(T5 혼·발소리 줄·암전 — 아래 절), `tasks.js`·`okru.js`(T6).
 - 글 칸의 줄을 보이게 할 때는 `G.ui.reveal(el)`만 쓴다. `scrollIntoView`는 놀이 화면 틀까지 굴려 HUD가 잘린다.
 
 ## 맡지 않는 것
@@ -70,6 +70,12 @@
 - **3막 끝** `{ id, type:'blank', act:'act3' }` — 표 전체 + `FINALE.repeat`(물음·help) + 한 문장 쓰기(필수, `lineOn('repeat')`).
 - 도우미: `G.blank.josa(낱말, '을'|'이'|'으로'…)`(받침 없으면 를·가·로, ㄹ 받침은 로), `G.blank.fill(표 문장, { 빈칸: 낱말 })`, `G.blank.table(st, { active, keys })`(결과 화면에서 같은 표를 그릴 때). 화면 이름표는 `TEXTS.WALL`·`TEXTS.BLANK`(js/data/texts.js 맨 아래), 모양은 `css/wall.css`.
 - 점검: `node tests/check-act1.mjs`(1막 실제 자료 + `tests/fixtures/walls-places.js`로 경계·답 고르기·반복의 뜻).
+
+## 혼·암전 화면(T5) — `js/game/hon.js`, 모양은 `css/hon.css`
+- **혼** `{ id, type:'hon', scene, walk, reveal:{ name, tag, explain }, reason:[원문…], note, setting }`(2막 `act2night`의 `n-hon`): 사건 화면(또는 대화창)을 잠시 걷고(`.hon-away`, 멈춤 `W.busy`를 걷는 동안만 푼다) 맵 위 걷기 판(`.hon-panel[data-phase=walk]`: 발소리 표시 + `walk` + 수단 칸, 혼은 이름 없는 잠긴 칸)을 띄운다 → 학생의 자리가 바뀌면(`G.world.test.state()`로 10px) 그때만 `G.rules.honOpenOn(st, { walking:true })` → 사건 화면 가운데 한 장(`.hon-reveal`: 칸이 '혼'으로 드러남 + `.hon-tag` '전기적 요소' + `explain`) → `reason`·`note`·`setting`을 한 줄씩. 이미 열린 기록이면 걷기 판 없이 드러남부터(다시 걷게 하지 않는다). 시간 제한 없음, 가만히 있으면 열리지 않는다.
+- **발소리 줄** `{ …대사 줄, foot:1|2|3 }`(줄 종류 `foot`): 그 줄 앞에 발자국 표시(`.hon-foot[data-near]`, 1 멀리 → 3 바로 곁). 글은 그대로.
+- **암전** `{ id, type:'blackout', t, mark, src, quote, fold }`: 삽화를 비우고(`setScene(null)`, `.event.blackout`) 한 줄 + 접힌 원문 카드. 다른 파일이 먼저 등록했으면 그것을 쓴다(`G.steps.has`). 3막 맺음(`e-death`)도 같은 꼴.
+- 화면 이름표의 대체 글은 `hon.js`의 `DEF`(`TEXTS.HON`이 있으면 그것이 먼저). 점검: `node tests/check-act2.mjs`.
 
 ## 이 폴더의 방식
 - 새 화면이 필요한 단계는 자기 파일에서 `G.steps.register('종류', async (step, ctx) => { … })`로 등록한다. `ctx`: `main`(글 자리), `tray(el)`(아래 트레이), `setScene(id)`, `placeId`, `mode:'event'|'dlg'`, `el`, `preset`. 끝나면 resolve.
