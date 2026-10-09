@@ -7,8 +7,9 @@
 - `rules.js`: 규칙의 바닥(한 번만 반영 장부 `onceOn`·`applyStep`·`applied`, 종류별 규칙 자리 `G.rules.stepRules`, 새로고침 대비 `snapKeys`에 `applied`, 거점 기록과 `attach`)과 이 게임의 규칙(아래 '규칙(G.rules)' 절).
 - `tiles.js`·`world.js`: 코드로 그리는 땅 타일과 테마, 탑다운 맵(카메라·충돌·조이스틱·말 걸기·목표 진행·대화창·맵 사이 입구), 지금 할 일의 위치 표시(은은한 빛·가장자리 화살표), 순서 없는 할 일·열림 조건·되풀이 구역, 바깥에서 부르는 `G.world.waitGoal`, 시험 손잡이 `G.world.test`.
 - `app.js`: 화면 흐름(타이틀 '시작'/'이어 하기'·'처음부터' → 거점 차례 → 끝), 사건 화면, 단계 실행(`runSteps`), 거점 첫 장, '준비 중' 거점, 설정(글자 크기 3단계·배경음·움직임 줄이기·전체 화면), 가로 안내, 전체 화면 `G.app.fs`, 걸이 `G.app.hooks.credits/finish`, 그림 내려받기 `downloadCanvas`.
-- `result.js`: 결과 화면 틀 `G.result`(같은 그리기 함수 `draw(pen, D)`로 화면 SVG와 저장 캔버스). 내용은 T7이 채운다.
-- 이 게임의 화면(빈 틀, 각 작업이 채운다): `wall.js`(T4 담 앞 순간), `blank.js`(T4 빈칸), `hon.js`(T5 혼), `tasks.js`·`okru.js`(T6), `finale.js`(T7).
+- `result.js`: 결과 화면 `G.result`(spec 10절 — 기록 한 벌 `record(st)`을 화면 `fill`과 그림 `layers`가 함께 쓰고, 같은 그리기 함수 `draw(pen, D)`로 화면 SVG와 저장 캔버스·PNG), 원전으로 나가는 문 `openDoor()`(대목 모음 `passages()` — 흐름 차례대로 거점·담·옥루춘의 원문+풀이).
+- `finale.js`: 마무리 화면 `G.finale` — 단계 `jeongi`(전기적 요소 한 줄: 2막 장면 다시 보기 → 근거 장면 → 한 줄)·`mbs`(「만복사저포기」: 줄거리 → 두 고르기, 기록 뒤 사실 → 한 줄). `G.app.hooks.finish = G.finale.finish`: 맺음(`FINALE.ui.after`)이 흐름에 있으면 기록이 덜 찬 마무리 화면만 거점 'finale'(단계 `f-jeongi`·`f-mbs`)로 펼친 뒤 결과 화면.
+- 이 게임의 화면(빈 틀, 각 작업이 채운다): `wall.js`(T4 담 앞 순간), `blank.js`(T4 빈칸), `hon.js`(T5 혼), `tasks.js`·`okru.js`(T6).
 - 글 칸의 줄을 보이게 할 때는 `G.ui.reveal(el)`만 쓴다. `scrollIntoView`는 놀이 화면 틀까지 굴려 HUD가 잘린다.
 
 ## 맡지 않는 것

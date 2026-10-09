@@ -1,3 +1,46 @@
-/* 마무리 화면(전기적 요소 한 줄, 「만복사저포기」) — T7가 채운다. 지금은 빈 틀.
-   공용 규칙(css/style.css): 누를 곳 max(44px, …), 크기는 rem(글자 크기 3단계 --fs를 따른다), 움직임은 animation/transition으로만
+/* 마무리 화면(js/game/finale.js): 전기적 요소 한 줄, 「만복사저포기」 함께 보기.
+   사건 화면(삽화 + 한지 판 + 엄지 자리 트레이) 위에 그린다.
+   공용 규칙(css/style.css): 누를 곳 max(44px, …), 크기는 rem/em(글자 크기 3단계 --fs를 따른다), 움직임은 animation/transition으로만
    (html.reduce-motion·prefers-reduced-motion이 저절로 멈춘다). 한 줄 쓰기는 G.ui.writeField(.wfield)를 쓴다. */
+
+/* 다시 보기 — 2막에서 '전기적 요소' 표시가 떴던 장면 */
+.fn-recall { border-left-color: var(--seal); background: rgba(255, 250, 240, .72); }
+.fn-recall-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .55rem; margin-bottom: .2rem; }
+.fn-tag { display: inline-block; padding: .05em .55em; border-radius: 999px; background: var(--seal); color: #fff8ec; font-size: .78em; font-weight: 700; letter-spacing: .04em; }
+.fn-name { font-size: 1.15em; }
+.fn-recall-head small { color: var(--ink-3); font-size: .78em; }
+.fn-q { font-weight: 700; }
+
+/* 근거 장면 넷: 넓은 화면은 네 칸, 좁으면 두 칸 */
+.fn-scenes { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 760px) { .fn-scenes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.fn-scenes .opt[aria-pressed="true"] { background: linear-gradient(180deg, #fff1cf, #fbe0a4); }
+.fn-chosen-row { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .6rem; margin: .4rem 0 .1rem; }
+.fn-chosen-l { color: var(--ink-2); font-size: .9em; }
+.fn-repick { min-height: max(44px, 2.75rem); }
+.fn-help { color: var(--ink-2); }
+.fn-line { white-space: pre-wrap; }
+
+/* 「만복사저포기」 */
+.mbs-summary p { margin: .35em 0; line-height: 1.6; }
+.mbs-q { font-weight: 700; }
+.mbs-mine-l { color: var(--ink-2); font-weight: 400; }
+.mbs-fact { margin: .4rem 0 .3rem; padding: .5rem .85rem .55rem; border-radius: .75rem; background: rgba(255, 250, 240, .7); border: 1.5px solid rgba(47, 40, 64, .2); animation: fnIn .3s ease-out; }
+.mbs-fact-h { font-size: .8em; font-weight: 700; color: var(--ink-3); letter-spacing: .04em; }
+.mbs-note { margin: .2rem 0 .4rem; }
+.mbs-opts { grid-template-columns: 1fr; }
+@keyframes fnIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* 화면 키보드 위에 붙은 쓰기 칸(.wf-docked, position:fixed)이 사건 판의 들어오는 움직임(transform)에 끌려가지 않게 */
+html.wf-open .ev-box:has(.fn-jeongi, .fn-mbs) { animation: none; }
+/* 화면 아래에 붙은 쓰기 칸이 글 칸의 끝을 덮으니, 그만큼 글 칸 아래를 비워 물음·도움말을 그 위로 굴려 보인다 */
+html.wf-open .ev-box:has(.fn-jeongi, .fn-mbs) .ev-scroll { padding-bottom: 4.6rem; }
+
+/* 휴대폰 가로(낮은 화면): 고르기 칸을 줄이고 설명은 감춘다(이름만으로 고른다) */
+@media (max-height: 460px) {
+  .fn-scenes .opt .od { display: none; }
+  .fn-scenes .opt { min-height: max(44px, 2.75rem); }
+  .mbs-opts { gap: .4rem; }
+  .mbs-opts .opt { min-height: max(44px, 2.75rem); padding-top: .3rem; padding-bottom: .3rem; }
+  .mbs-opts .opt .ot { font-size: .92em; line-height: 1.3; }
+}

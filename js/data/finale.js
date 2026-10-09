@@ -88,3 +88,52 @@ window.FINALE = window.FINALE || {};
     where: g('한문 원문: 위키문헌 「번역:금오신화」 (ko.wikisource.org/wiki/번역:금오신화). 게임은 이 주소를 열지 않는다. 직접 찾아 읽어 보자.'),
   };
 })();
+
+// ───────── 화면 글(T7, 마무리 화면과 결과 화면의 단추·제목·안내) ─────────
+//  위의 글(T2)과 따로 둔다. 이야기 글이 아니라 화면의 이름표라 표시·출처·상태를 달지 않는다.
+//  점수·등급·맞고 틀림을 뜻하는 말을 쓰지 않는다(채점하지 않는다).
+FINALE.ui = {
+  after: 'epilogue',                // 이 거점(맺음)을 지난 뒤에 마무리 화면이 열린다(흐름에 없으면 곧바로 결과 화면)
+  placeName: '마무리',
+  // 전기적 요소 한 줄
+  recallTitle: '다시 보기 — 2막, 밤의 낭하',
+  sceneHint: '근거 장면',
+  chosen: '고른 장면',
+  repick: '장면 다시 고르기',
+  writeLabel: '한 줄 쓰기',
+  placeholder: '한 줄로 써 보자',
+  done: '완료',
+  need: '한 줄을 써야 다음으로 넘어갈 수 있어요.',
+  toMbs: '「만복사저포기」로 ▶',
+  // 「만복사저포기」
+  summaryKind: '줄거리 카드',
+  next: '다음 ▶',
+  myPick: '내가 고른 것',
+  fact: '원작에서는',
+  pickNote: '고른 답은 원작 이야기를 보기 전에 기록해 두었어요. 원작과 견주어 보자.',
+  toResult: '결과 보기 ▶',
+  // 결과 화면
+  secTable: '만남과 이별',
+  firstPick: '처음',
+  notDone: '하지 않음',
+  repeatLabel: '반복의 뜻(쓴 글)',
+  secWalls: '세 담과 수단',
+  wallsNote: '담 앞에서 써 본 수단의 차례',
+  noRecord: '기록 없음',
+  secAct3: '3막',
+  mindLabel: '마음 둔 곳',
+  proposeLabel: '이생에게 처음 한 답',
+  secLines: '쓴 글',
+  jeongiLabel: '전기적 요소 한 줄',
+  sceneLabel: '근거 장면',
+  mbsSameLabel: '「만복사저포기」 한 줄',
+  mbsPicksLabel: '「만복사저포기」 고르기(원작을 보기 전의 답)',
+  secReview: '되짚기 질문',
+  reviewNote: '답은 적지 않아요. 수업에서 함께 이야기해 보자.',
+  secKim: '「김현감호」와 견주어 보기',
+  secDoor: '원전으로 나가는 문',
+  doorBtn: '게임에 나온 원문 모아 보기',
+  doorIntro: '게임에 나온 원문과 풀이를 장면 차례로 모았다.',
+  doorBack: '결과로 돌아가기',
+  mbsGroup: '「만복사저포기」',
+};
