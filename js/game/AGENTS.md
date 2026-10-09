@@ -9,7 +9,7 @@
 - `app.js`: 화면 흐름(타이틀 '시작'/'이어 하기'·'처음부터' → 거점 차례 → 끝), 사건 화면, 단계 실행(`runSteps`), 거점 첫 장, '준비 중' 거점, 설정(글자 크기 3단계·배경음·움직임 줄이기·전체 화면), 가로 안내, 전체 화면 `G.app.fs`, 걸이 `G.app.hooks.credits/finish`, 그림 내려받기 `downloadCanvas`.
 - `result.js`: 결과 화면 `G.result`(spec 10절 — 기록 한 벌 `record(st)`을 화면 `fill`과 그림 `layers`가 함께 쓰고, 같은 그리기 함수 `draw(pen, D)`로 화면 SVG와 저장 캔버스·PNG), 원전으로 나가는 문 `openDoor()`(대목 모음 `passages()` — 흐름 차례대로 거점·담·옥루춘의 원문+풀이).
 - `finale.js`: 마무리 화면 `G.finale` — 단계 `jeongi`(전기적 요소 한 줄: 2막 장면 다시 보기 → 근거 장면 → 한 줄)·`mbs`(「만복사저포기」: 줄거리 → 두 고르기, 기록 뒤 사실 → 한 줄). `G.app.hooks.finish = G.finale.finish`: 맺음(`FINALE.ui.after`)이 흐름에 있으면 기록이 덜 찬 마무리 화면만 거점 'finale'(단계 `f-jeongi`·`f-mbs`)로 펼친 뒤 결과 화면.
-- 이 게임의 화면(빈 틀, 각 작업이 채운다): `wall.js`(T4 담 앞 순간), `blank.js`(T4 빈칸), `hon.js`(T5 혼), `tasks.js`·`okru.js`(T6).
+- 이 게임의 화면: `wall.js`(T4 담 앞 순간·답 고르기 — 아래 절), `blank.js`(T4 빈칸·반복의 뜻), `hon.js`(T5 혼), `tasks.js`·`okru.js`(T6).
 - 글 칸의 줄을 보이게 할 때는 `G.ui.reveal(el)`만 쓴다. `scrollIntoView`는 놀이 화면 틀까지 굴려 HUD가 잘린다.
 
 ## 맡지 않는 것
@@ -58,6 +58,18 @@
 
 - **확정 기록과 되돌리기**: 위 …On이 적는 칸은 `G.save.COMMITTED`이고 `snapKeys`(되돌리기)에 넣지 않는다. 시도(수단·답)는 `applyStep`·`applied` 장부를 거치지 않고 **시도 번호 `n`**으로 한 번만 들어간다 — `applied`는 되돌리기에 들어 있어 단계 도중 새로고침하면 지워지므로, 장부로 막으면 두 번 들어갈 수 있다. 그 밖의 칸은 '한 번 정해지면 그대로'라 다시 불러도 같다. `stepRules.wall`·`propose`는 기록을 읽기만 한다.
 - 담 높이·반응 겹은 저장하지 않고 늘 기록에서 다시 구한다. 화면에 점수·맞음·틀림을 보이지 않는다.
+
+## 담 앞 순간·빈칸 화면(T4) — 2·3막은 고치지 않고 이렇게 쓴다
+- **담 앞 순간** `{ id, type:'wall', wall?:'순간', tip?:글 덩이, leave?:글 덩이, scene?, next? }` — 순간 열쇠는 `wall`, 없으면 `id`(예: `{ id:'w2-bandit', type:'wall' }`). 화면은 `js/game/wall.js`.
+  - 담 높이 그림(`.wall-stage[data-height]`, 보이기만) → `intro` 한 줄씩(마지막 줄은 고르기와 함께) → 수단 칸(`meansFor`: 혼이 잠겼으면 이름 없는 잠긴 칸, 써 본 칸에 '써 봄') → 고르면 `useMeansOn`으로 곧바로 기록(단추를 그릴 때 받은 `nextAttempt` 번호) → 반응(`react` 세 겹은 규칙이 고름) → 원작에 맞으면 `applyStep` 후 '다음', 아니면 담만 높아지고 다시 고른다.
+  - `tip`은 처음 고를 때 칸 위 안내(없으면 `TEXTS.WALL.pick`). 단계가 시작되면 삽화를 `scene`(없으면 비움)으로 바꾼다.
+  - 통과가 없는 순간(`G.rules.canLeave`, `w3-border`): 들어서면 `borderOn`을 부르고 '돌아서기' 칸이 붙는다. 떠날 때 글은 `leave` → 거점 자료의 `border.leave`(그 순간을 가리키는 것) → `TEXTS.WALL.leaveLine`. 단계는 `{ left:true }`로 끝난다(되풀이 구역이면 `runSteps`의 `again`으로 다시 열린다).
+  - 하다 말고 껐다 켜면: 기록은 그대로, 마지막 반응을 다시 보이고 이어 고른다. 이미 통과했으면 통과 반응과 '다음'만.
+- **답 고르기** `{ id, type:'propose', wall:'w3-propose' }`(또는 `kind:'answer'`인 순간의 `wall` 단계) — `together`(이생의 말·최 씨의 원작 답·note, 고르기 아님)를 먼저 한 줄씩 → `intro` → `labels`의 답 단추(`proposeChoices`, '함께 가자' 없음) → `answerOn` 기록 → `stay`는 반응·담이 높아짐·다시 고름, 원작의 답은 '다음'.
+- **막 끝 빈칸** `{ id, type:'blank', act:'act1'|'act2' }` — 표 전체(`CARDS.table`) + 그 막의 빈칸(`CARDS[막].blanks`)을 차례로. 카드는 `cardsFor(막)`(가나다 차례). 맞지 않는 카드는 `replies`의 인물 말 + 다시 고름(오답 표시 없음), 기록은 `blankOn`(first·final). 막 얻은 낱말 알림이 지나간 뒤 카드를 늘어놓는다.
+- **3막 끝** `{ id, type:'blank', act:'act3' }` — 표 전체 + `FINALE.repeat`(물음·help) + 한 문장 쓰기(필수, `lineOn('repeat')`).
+- 도우미: `G.blank.josa(낱말, '을'|'이'|'으로'…)`(받침 없으면 를·가·로, ㄹ 받침은 로), `G.blank.fill(표 문장, { 빈칸: 낱말 })`, `G.blank.table(st, { active, keys })`(결과 화면에서 같은 표를 그릴 때). 화면 이름표는 `TEXTS.WALL`·`TEXTS.BLANK`(js/data/texts.js 맨 아래), 모양은 `css/wall.css`.
+- 점검: `node tests/check-act1.mjs`(1막 실제 자료 + `tests/fixtures/walls-places.js`로 경계·답 고르기·반복의 뜻).
 
 ## 이 폴더의 방식
 - 새 화면이 필요한 단계는 자기 파일에서 `G.steps.register('종류', async (step, ctx) => { … })`로 등록한다. `ctx`: `main`(글 자리), `tray(el)`(아래 트레이), `setScene(id)`, `placeId`, `mode:'event'|'dlg'`, `el`, `preset`. 끝나면 resolve.

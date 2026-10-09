@@ -5,7 +5,9 @@
 //   → "밤마다 몰래 만났다" 한 줄 → 아버지가 알고 울주로 보냄 → 향아를 시켜 물음 → 앓아누움 → 부모가 시를 찾아냄
 //   → 담 앞 w1-parents → 중매와 이 씨 집의 두 번 거절, 최 씨 집의 고집 → 혼인 → 급제 → 막 끝 빈칸.
 //  낱말 카드는 단계의 fx.word로 저절로 얻는다: 담장(그넷줄) · 울주(아버지) · 혼인(혼례) · 과거 급제(급제).
-//  맵 격자와 사람 자리는 자리 표시다(1막 작업이 고친다). 엔진 없이 읽혀도 격자가 만들어지게 mk를 대신한다.
+//  맵(1막 작업): 정원 한 판 20×12. 맨 위 두 줄은 담 밖(버드나무 길), 셋째 줄이 북쪽 담. 누각 앞에서 시작해 그네까지 몇 걸음,
+//   향아는 북쪽 담 밑. 조작 익히기(spec 4절)는 목표의 say(걷기·말 걸기 안내)와 w1-poem 단계의 tip(수단 고르기 안내)으로 이야기 안에서 한다.
+//  엔진 없이 읽혀도 격자가 만들어지게 mk를 대신한다(rect만 쓴다).
 window.PLACES = window.PLACES || {};
 (function () {
   const ST = '확인 전';
@@ -21,33 +23,52 @@ window.PLACES = window.PLACES || {};
     return gr.map((r) => r.join(''));
   };
 
-  // 자리 표시 격자(20×12): 맨 위 줄이 북쪽 담. 1막 작업이 실제 정원으로 바꾼다.
-  const grid = mk(20, 12, '.', [['rect', 0, 0, 20, 1, '#']]);
+  // 정원 격자(20×12): 0줄 담 밖 풀, 1줄 담 밖 버드나무 길, 2줄 북쪽 담, 둘레는 산울타리.
+  //  누각(오른쪽 위) 앞 돌길에서 시작 → 왼쪽으로 몇 걸음이면 그네. 꽃밭은 아래쪽 두 군데. 6줄(걷는 줄)은 비워 둔다.
+  const grid = mk(20, 12, '.', [
+    ['rect', 0, 0, 20, 1, 'm'], ['rect', 0, 1, 20, 1, ':'], ['rect', 0, 2, 20, 1, '#'],
+    ['rect', 0, 3, 1, 9, 'h'], ['rect', 19, 3, 1, 9, 'h'], ['rect', 0, 11, 20, 1, 'h'],
+    ['rect', 13, 6, 4, 1, '='], ['rect', 15, 7, 1, 4, '='],
+    ['rect', 2, 8, 5, 2, ','], ['rect', 10, 8, 4, 2, ','],
+  ]);
 
   PLACES.act1 = {
     name: '1막 「부모의 담」', act: 'act1', year: '고려 말',
     music: 'garden', cover: 'sc_act1_wall',
-    map: 'garden', spawn: [10, 8, 'up'],
+    map: 'garden', spawn: [14, 6, 'left'],
     maps: {
       garden: {
-        name: '최 씨 집 정원', grid, spawn: [10, 8, 'up'],
+        name: '최 씨 집 정원', theme: 'garden', grid, spawn: [14, 6, 'left'],
+        // 소품: 담 밖 버드나무 셋, 작은 누각, 그네, 꽃밭 둘(바닥에 깔림)
+        props: [
+          ['pr_willow', 2, 1], ['pr_willow', 8, 1], ['pr_willow', 14, 1],
+          ['pr_pavilion', 14, 4], ['pr_swing', 8, 4],
+          ['pr_flowers', 2, 9], ['pr_flowers', 11, 9],
+        ],
         spots: {
-          swing: { x: 4, y: 3, w: 2, h: 2, name: '그네' },
-          wallfoot: { x: 8, y: 1, w: 3, h: 1, name: '북쪽 담 밑' },
-          pavilion: { x: 14, y: 3, w: 3, h: 3, name: '작은 누각' },
-          flowers: { x: 9, y: 6, w: 3, h: 2, name: '꽃밭', look: [g('온갖 꽃이 한창이다. 벌 소리, 새 소리가 시끄럽다.', null, '名花盛開, 蜂鳥爭喧')] },
+          swing: { x: 8, y: 5, w: 3, h: 2, name: '그네' },
+          wallfoot: { x: 4, y: 3, w: 4, h: 1, name: '북쪽 담 밑' },
+          pavilion: { x: 14, y: 5, w: 3, h: 1, name: '작은 누각' },
+          flowers: { x: 10, y: 8, w: 4, h: 2, name: '꽃밭', look: [g('온갖 꽃이 한창이다. 벌 소리, 새 소리가 시끄럽다.', null, '名花盛開, 蜂鳥爭喧')] },
         },
       },
     },
     cast: {
       garden: {
-        hyanga: { who: 'hyanga', x: 7, y: 2, dir: 'down', talk: [[g('아씨, 무슨 일이든 저를 부르세요.', 'hyanga')]] },
+        hyanga: { who: 'hyanga', x: 5, y: 3, dir: 'down', talk: [[g('아씨, 무슨 일이든 저를 부르세요.', 'hyanga')]] },
       },
     },
     beats: [
       { id: 'b-peek', auto: true, inline: true, steps: ['a1-peek', 'a1-recite', 'a1-toss'] },
-      { id: 'b-walk', goal: '그네 쪽으로 몇 걸음 걸어 보자', go: 'swing', inline: true, steps: ['a1-walk'] },
-      { id: 'b-hyang', goal: '향아에게 말을 걸어 보자', talk: 'hyanga', steps: ['a1-paper'] },
+      // 조작 익히기(spec 4절): 걷기 → 말 걸기 → (w1-poem에서) 수단 고르기. 안내는 이야기 안의 짧은 글(say·tip)
+      {
+        id: 'b-walk', goal: '그네 쪽으로 몇 걸음 걸어 보자', go: 'swing', inline: true, steps: ['a1-walk'],
+        say: [g('왼쪽 아래를 누른 채 끌거나 방향키를 눌러 걸어 보자. 은은히 빛나는 곳이 지금 갈 곳이다.', null, '조작 익히기')],
+      },
+      {
+        id: 'b-hyang', goal: '향아에게 말을 걸어 보자', talk: 'hyanga', steps: ['a1-paper'],
+        say: [g('사람 곁에 서서 오른쪽 아래 말 걸기 단추(또는 E 키)를 누르면 말을 건다.', null, '조작 익히기')],
+      },
       { id: 'b-answer', auto: true, steps: ['w1-poem', 'a1-eight', 'a1-swing', 'a1-nights'] },
       { id: 'b-father', auto: true, steps: ['a1-father', 'a1-wait'] },
       { id: 'b-ask', goal: '향아에게 그 사람 소식을 알아봐 달라고 하자', talk: 'hyanga', steps: ['a1-ask'] },
@@ -90,7 +111,7 @@ window.PLACES = window.PLACES || {};
           p('최 씨는 시를 두 번 세 번 거듭 읽었다. 마음속으로 기뻤다.', '披讀再三, 心自喜之'),
         ],
       },
-      { id: 'w1-poem', type: 'wall' },
+      { id: 'w1-poem', type: 'wall', tip: g('수단 칸에서 하나를 골라 맞서 보자. 무엇을 골라도 다시 고를 수 있다.', null, '조작 익히기') },
       {
         id: 'a1-eight', type: 'card',
         card: {
