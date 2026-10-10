@@ -6,7 +6,7 @@
 
 - `run-all.mjs` — `check-*.mjs`를 스스로 찾아 이름 차례로 하나씩 자식 프로세스로 돌리고, 하나라도 0이 아니면 종료 1. 인자를 주면 파일 이름에 그 낱말이 든 점검만(`node tests/run-all.mjs data rules`). 고른 낱말에 맞는 파일이 없으면 종료 1.
 - 브라우저 없는 점검
-  - `check-data.mjs` — 자료 파일을 `lib-data.mjs`로 엔진 없이 읽어 본다: 담 앞 순간 다섯과 원작에 맞는 수단, 반응 세 겹, 카드·빈칸의 때, 옥루춘 여덟 구와 회상 짝, 마무리 자료, 모든 글의 표시·출처·상태(`확인 전`), 원문 한자가 원문 사본(`design/sources/wikisource-geumosinhwa-raw.txt`)에 그대로 있음, 글 길이 상한, 넘지 않는 선의 말.
+  - `check-data.mjs` — 자료 파일을 `lib-data.mjs`로 엔진 없이 읽어 본다: 담 앞 순간 다섯과 원작에 맞는 수단, 반응 세 겹, 카드·빈칸의 때, 옥루춘 여덟 구와 회상 짝, 마무리 자료, 모든 글의 표시·출처·상태(`확인 전`), 원문 한자가 원문 사본(`sources/wikisource-geumosinhwa-raw.txt`)에 그대로 있음, 글 길이 상한, 넘지 않는 선의 말.
   - `check-rules.mjs` — `js/core/save.js`·`js/game/rules.js`와 실제 자료를 Node `vm`에 싣고 `G.rules`의 함수를 평범한 상태 객체로 부른다. 새로고침 되돌리기는 `app.runSteps`와 같은 방식으로 흉내 낸다.
   - `check-review-doc.mjs` — 글 확인 문서가 도구로 다시 만든 것과 한 글자도 같은지, 그리고 도구의 훑기 코드를 쓰지 않고 따로 모은 모든 글이 그 '자리' 항목에 있는지.
   - `check-limits.mjs` — 학생 화면에 나올 수 있는 모든 문자열(자료 전부, 엔진·화면 코드의 문자열에서 주석을 뺀 것, `index.html`, CSS `content`)에 점수·게임 오버·맞고 틀림의 말이 없음, 암전 장면에 그림 자리 없음.

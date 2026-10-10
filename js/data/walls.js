@@ -6,7 +6,7 @@
 //    원작에 맞는 수단도 세 겹을 다 적는다(통과한 뒤에는 again·hint가 나오지 않지만 자료 꼴을 하나로 둔다).
 //  - 반응 글은 인물·세계의 말이다. 학생을 탓하거나 '틀렸다'고 말하지 않는다. 70자 안.
 //  - w3-propose는 수단이 아니라 답 고르기(kind:'answer'). '함께 가자'는 고르기에 없고 together(이생의 말 + 최 씨의 원작 답)로만 나온다.
-//  원문은 design/sources/wikisource-geumosinhwa-raw.txt(위키문헌 「번역:금오신화」 李生窺牆傳)에서만 옮긴다.
+//  원문은 sources/wikisource-geumosinhwa-raw.txt(위키문헌 「번역:금오신화」 李生窺牆傳)에서만 옮긴다.
 window.WALLS = window.WALLS || {};
 (function () {
   const ST = '확인 전';

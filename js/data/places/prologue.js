@@ -1,7 +1,7 @@
 'use strict';
 // 들어가기 — 송도(맵 없음: 사건 화면으로만 펼친다. 흐름 작업(T8)이 맵 없이 두기로 정했다 — spec 3절 '1분', 조작 익히기는 1막 첫머리)
 //  송도의 두 사람 → 세상 사람들의 칭찬 노래(원문+풀이) → 미션 → 게임 설정 안내(수단과 담) → 표시 다섯과 '게임 설정'의 뜻.
-//  글 덩이 꼴은 js/data/AGENTS.md. 원문은 design/sources/wikisource-geumosinhwa-raw.txt에서만.
+//  글 덩이 꼴은 js/data/AGENTS.md. 원문은 sources/wikisource-geumosinhwa-raw.txt에서만.
 window.PLACES = window.PLACES || {};
 (function () {
   const ST = '확인 전';

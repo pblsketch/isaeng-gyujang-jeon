@@ -63,6 +63,6 @@
 ## 바깥에 기대는 것
 
 - **형제 게임 「최척전」(`../choecheok-jeon`)**: 엔진의 출처, 배경음 8곡의 출처(파일을 바이트 그대로 복사해 옴), 점검용 Playwright 설치본(`tests/node_modules` 연결). 게임 실행 중에는 기대지 않는다.
-- **원문 사본**: `design/sources/wikisource-geumosinhwa-raw.txt`(위키문헌 「번역:금오신화」 원본 글). 자료 점검이 원문 한자를 이 사본과 대조한다.
+- **원문 사본**: `sources/wikisource-geumosinhwa-raw.txt`(위키문헌 「번역:금오신화」 원본 글). 자료 점검이 원문 한자를 이 사본과 대조한다.
 - **글꼴 원본**: google/fonts 저장소의 고운바탕, Noto Serif KR·SC, 나눔손글씨 붓(모두 OFL). `tools/fonts_src/`에 두고 저장소에는 부분 글꼴만 올린다.
 - **배포**: GitHub 저장소 `pblsketch/isaeng-gyujang-jeon`(`main`, 비공개). 공개 주소는 GitHub Pages로 낼 계획이며, 시리즈의 다른 게임과 같은 출처(같은 Pages 주소)에 올라갈 수 있다.

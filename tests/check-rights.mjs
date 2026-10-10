@@ -1,7 +1,7 @@
 // 권리 점검(spec 16·17절 '권리', handoff 넘지 않는 관문 2).
 // 1) 교과서 출판사 이름이 저장소에 올라가는 파일(이름과 내용), 커밋 글, 커밋 이력의 변경 내용, 브랜치 이름에 없다
 // 2) 게임 코드(js·css·index.html)가 바깥 주소로 요청하지 않는다
-// 3) 교과서 PDF·추출본, 그림·소리·글꼴의 생성 원본이 저장소에 올라가지 않는다(비공개 기획 폴더 design/은 이 검사에서 뺀다)
+// 3) 교과서 PDF·추출본, 그림·소리·글꼴의 생성 원본, 기획 폴더 design/이 저장소에 올라가지 않는다
 // 4) assets/ 아래 모든 파일이 credits/*.tsv에 상업 이용 가능으로 한 줄씩 있다
 // 이 파일에도 그 이름을 글자 그대로 쓰지 않는다. 글자 번호로 만들어 쓴다(「옛 노래 서고」 점검과 같은 글자 번호).
 import fs from 'node:fs';
@@ -111,7 +111,9 @@ console.log('\n[4] 교과서 파일과 생성 원본');
   const raw = outsideDesign.filter((f) => /^(assets\/raw|tools\/fonts_src|tools\/music_src|tools\/voice_cache)\//.test(f) || /\.(ttf|otf|ttc|wav|flac|psd)$/i.test(f));
   check(raw.length === 0, '그림·소리·글꼴의 생성 원본이 추적되지 않는다' + (raw.length ? ': ' + raw.join(', ') : ''));
   const ignored = (p) => spawnSync('git', ['check-ignore', '-q', p], { cwd: root, windowsHide: true }).status === 0;
-  check(['assets/raw/x.png', 'tools/fonts_src/x.ttf', '.dryforge/spec.md'].every(ignored), '원본 폴더와 dryforge 작업 폴더는 .gitignore로 막혀 있다');
+  check(['assets/raw/x.png', 'tools/fonts_src/x.ttf', '.dryforge/spec.md', 'design/x.md'].every(ignored), '원본 폴더, 기획 폴더(design/), 설계 작업 폴더는 .gitignore로 막혀 있다');
+  const designTracked = tracked.filter((f) => f.startsWith('design/'));
+  check(designTracked.length === 0, '기획 폴더 design/의 파일이 추적되지 않는다(공개 저장소)' + (designTracked.length ? ': ' + designTracked.slice(0, 5).join(', ') : ''));
 }
 
 // ── 5. 자산 출처 ──

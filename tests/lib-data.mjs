@@ -28,7 +28,7 @@ export function loadData() {
 }
 
 export function sourceText() {
-  return fs.readFileSync(path.join(root, 'design/sources/wikisource-geumosinhwa-raw.txt'), 'utf8');
+  return fs.readFileSync(path.join(root, 'sources/wikisource-geumosinhwa-raw.txt'), 'utf8');
 }
 
 // 한자만 남긴다(구두점·빈칸·따옴표·꺾쇠를 모두 뺀다). 글자 자체는 바꾸지 않는다.

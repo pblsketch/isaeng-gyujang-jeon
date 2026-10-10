@@ -64,7 +64,7 @@ node tests/run-all.mjs data rules   # 파일 이름에 그 낱말이 든 점검�
 
 ```
 powershell -File tools/gen.ps1 -Name draft_x_scene -PromptFile tools/prompts/draft_x_scene.txt -Out assets/raw/drafts/draft_x_scene.png -UseModel gpt-5.6-sol
-python tools/drafts.py               # assets/raw/drafts/의 원본을 design/art-drafts/에 jpg로 줄이고 compare.jpg를 만든다
+python tools/drafts.py               # assets/raw/drafts/의 원본을 design/art-drafts/(git 제외, 이 컴퓨터에만)에 jpg로 줄이고 compare.jpg를 만든다
 ```
 
 Codex CLI에 로그인되어 있어야 한다(`~/.codex/auth.json`). 원본 PNG는 `assets/raw/`(git 제외)에만 둔다.
@@ -72,8 +72,8 @@ Codex CLI에 로그인되어 있어야 한다(`~/.codex/auth.json`). 원본 PNG�
 ## 7. 올리기와 공개
 
 - 원격 저장소: `pblsketch/isaeng-gyujang-jeon`(`main`, 비공개). `git push`는 사용자 승인 뒤에만 한다.
-- **공개로 바꾸기 전에**(사용자 승인 뒤) 기획 폴더 `design/`을 git 기록에서까지 지운다 — 지금 커밋에서 지우는 것으로는 이력에 남는다. 단 `design/`에는 점검·도구가 계속 쓰는 것이 있으므로 **먼저 옮긴다**: 원문 사본 `design/sources/wikisource-geumosinhwa-raw.txt`(자료 점검 `tests/lib-data.mjs`가 원문 한자를 대조하고, `tools/review-doc.mjs`가 출처로 적는다)를 사용자가 정한 추적 폴더로 옮기고 두 파일의 경로를 함께 고친다. 그림 시안 도구 `tools/drafts.py`의 출력 경로(`design/art-drafts/`)도 정한다. 옮긴 뒤 `node tools/review-doc.mjs`로 글 확인 문서를 다시 만들고(문서에 원문 사본 경로가 적힌다) `node tests/run-all.mjs` **전체**가 종료 0인지 본 다음에 이력을 다시 쓰고, 다시 `node tests/run-all.mjs` 전체로 출판사 이름·추적 파일·원문 대조를 확인한다. 강제 push가 필요하므로 그것도 사용자에게 묻는다.
-- **GitHub Pages**: 공개 전환 뒤 사용자 승인을 받아 저장소 설정에서 `main` 브랜치 루트로 켠다. 빌드 단계가 없으므로 저장소 루트가 그대로 사이트다. 시리즈 게임과 같은 Pages 주소(같은 출처)에 올라가도 저장 열쇠 머리말(`isaeng-gyujang:`)로 나뉜다.
+- 저장소는 공개다. 기획 폴더 `design/`은 `.gitignore`로 막혀 있으니 `git add -f`로 억지로 넣지 않는다. 올리기 전에 `node tests/run-all.mjs rights`로 출판사 이름·추적 파일을 확인한다.
+- **GitHub Pages**: `main` 브랜치 루트로 켜져 있다(주소 `https://pblsketch.github.io/isaeng-gyujang-jeon/`). 빌드 단계가 없으므로 저장소 루트가 그대로 사이트이고, `main`에 올리면 1~2분 뒤 바뀐다. 루트의 `.nojekyll`이 Jekyll 처리를 끈다 — 지우면 `_`로 시작하는 파일이 빠지고 마크다운이 페이지로 바뀐다. 시리즈 게임과 같은 Pages 주소(같은 출처)에 올라가도 저장 열쇠 머리말(`isaeng-gyujang:`)로 나뉜다.
 - 올린 뒤 휴대폰 가로로 주소를 열어 처음부터 결과 화면까지 한 번 가 보고, `?act=3`이 열리는지 본다.
 
 ## 설정 값
