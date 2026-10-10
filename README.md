@@ -78,7 +78,7 @@
 
 ## 점검(만드는 사람용)
 
-Node 18 이상, 설치된 Chrome, Python 3(fontTools — 글꼴 점검)이 필요합니다. Playwright는 `tests/node_modules`에 둡니다.
+Node 18 이상, 설치된 Chrome, Python 3(fontTools와 brotli — 글꼴 만들기·점검, 명령 이름 `python`)이 필요합니다. Playwright는 `tests/node_modules`에 둡니다.
 
 ```
 node tests/run-all.mjs          # 모든 점검(0으로 끝나야 완료)

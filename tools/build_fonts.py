@@ -68,7 +68,7 @@ def used_chars():
     chars = set(chr(c) for c in range(0x20, 0x7F))
     for f in source_files():
         chars |= set(read(f))
-    chars |= set('「」『』〈〉《》·…—–→←↑↓▶▼▲◆›✕“”‘’')
+    chars |= set('「」『』〈〉《》·…—–→←↑↓▶▼▲◆›“”‘’')
     return ''.join(sorted(c for c in chars if c >= ' '))
 
 
