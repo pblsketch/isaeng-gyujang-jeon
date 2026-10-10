@@ -9,7 +9,7 @@
 //  - shortcut: 바로가기 주소(?act=1|2|3, spec 14절)로 열었을 때 타이틀 글. {act}는 '2막 「전란의 담」'처럼 바뀐다.
 //    저장 기록이 있으면 '이어 하기 / 이 막부터', 없으면 그 막에서 바로 시작. 건너뛴 막은 30초 요약 카드(거점 자료의 summary).
 window.FLOW = (function () {
-  const MISSION_SRC = { mark: '게임 설정', src: '게임 설정 — spec 2절 미션과 선택의 세 갈래(수단으로 맞섬·마음 둠·답함)', status: '확인 전' };
+  const MISSION_SRC = { mark: '게임 설정', src: '게임 설정 — 게임의 미션과 선택의 세 갈래(수단으로 맞섬·마음 둠·답함)', status: '확인 전' };
   return {
     title: '세 번의 담',
     subtitle: '이생규장전',
@@ -24,7 +24,7 @@ window.FLOW = (function () {
       act3: Object.assign({ name: '3막', title: '저승의 담', mission: '남은 날에 할 일을 마치고, 마지막 담 앞에서 답하라.' }, MISSION_SRC),
     },
     places: {
-      prologue: Object.assign({ name: '들어가기', mission: '담 너머에 그 사람이 있다. 무엇이 우리를 가로막든 넘어가라.' }, MISSION_SRC, { src: '게임 설정 — spec 2절 첫 1분의 미션' }),
+      prologue: Object.assign({ name: '들어가기', mission: '담 너머에 그 사람이 있다. 무엇이 우리를 가로막든 넘어가라.' }, MISSION_SRC, { src: '게임 설정 — 첫 1분의 미션' }),
       act1: { name: '최 씨 집 정원', act: 'act1' },
       act2: { name: '피란길', act: 'act2' },
       act2night: { name: '밤의 최 씨 집', act: 'act2' },

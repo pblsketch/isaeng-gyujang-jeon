@@ -33,7 +33,7 @@ window.PLACES = window.PLACES || {};
         ],
       },
       {
-        id: 'p-mission', type: 'say', mark: '게임 설정', src: '게임 설정(spec 2절 미션)', status: ST,
+        id: 'p-mission', type: 'say', mark: '게임 설정', src: '게임 설정(게임의 미션)', status: ST,
         lines: [
           g('너는 최 씨다. 담 너머에 그 사람이 있다.'),
           g('무엇이 우리를 가로막든 넘어가라.'),
@@ -48,7 +48,7 @@ window.PLACES = window.PLACES || {};
       },
       {
         // 표시 다섯과 '게임 설정'의 뜻(spec 11절). 원작에 없는 것을 게임이 지었다는 것을 처음에 밝힌다
-        id: 'p-marks', type: 'say', mark: '게임 설정', src: '게임 설정(spec 11절 표시)', status: ST,
+        id: 'p-marks', type: 'say', mark: '게임 설정', src: '게임 설정(글의 표시 다섯)', status: ST,
         lines: [
           g('글마다 표시가 붙는다. 원문 · 풀이 · 게임 설정 · 이본 노트 · 해석.'),
           g('‘게임 설정’은 원작에 없는 것을 이 게임이 지어낸 것이다. 수단과 담, 낱말 카드, 막마다의 미션이 그렇다. 큰 줄거리와 결말은 원작 그대로다.'),

@@ -400,9 +400,14 @@
     const maps = P.maps || {};
     const at = (m, sp) => ({ map: m || null, spawn: sp || (m && maps[m] && maps[m].spawn) || (m === P.map ? P.spawn : null) || null });
     const g = R.act3Goal(st);
-    if (g.done) return at(P.map);
-    if (g.border) { const b = P.border || {}; return b.map && maps[b.map] ? at(b.map, b.spawn) : at(P.map); }
-    const ms = uniq(g.tasks.map((id) => (((P.tasks || {})[id]) || {}).map).filter((m) => m && maps[m]));
+    // 기록(st.tasks)은 확정됐지만 엔진의 할 일 장부에는 아직 안 끝난 할 일(장사는 t-burial에서 먼저 확정되고 t-after가 남는다):
+    //  그 단계 도중 닫았다면 엔진은 그 할 일을 다시 펼치므로 그 할 일의 구역에서 이어 한다.
+    const beat = ((P.beats || []).find((b) => b && b.tasks) || {}).id || 'b-tasks';
+    const open = Object.keys(P.tasks || {}).filter((id) => (st.tasks || {})[id] && !(st.done || {})['b:act3:' + beat + '.' + id] && !(st.done || {})['b:act3:' + beat]);
+    const pending = uniq([...g.tasks, ...open]);
+    if (g.done && !open.length) return at(P.map);
+    if (g.border && !open.length) { const b = P.border || {}; return b.map && maps[b.map] ? at(b.map, b.spawn) : at(P.map); }
+    const ms = uniq(pending.map((id) => (((P.tasks || {})[id]) || {}).map).filter((m) => m && maps[m]));
     return ms.length === 1 ? at(ms[0]) : at(P.map);
   };
   // 이어 하기 지점(순수): 끝내지 않은 거점(지금 거점이 먼저)의 끝내지 않은 첫 목표, 그 목표 앞까지 옮겨 온 지도와 그 시작 지점.

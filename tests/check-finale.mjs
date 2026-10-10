@@ -233,6 +233,8 @@ const nextBtn = (page) => page.locator('.event.on .ev-tray .btn.primary:not(.wf-
   c.ok(iA >= 0 && iB > iA && iC > iB && iD > iC, `장면 차례(1막 → 2막 밤 → 3막 → 맺음) (${iA} < ${iB} < ${iC} < ${iD})`);
   c.ok(/위키문헌/.test(sd.all) && /ko\.wikisource\.org/.test(sd.all) && sd.links === 0, '대목 모음 화면에도 전문을 읽을 곳 안내(글로만)');
   c.ok(sd.groups.length >= 4, `거점마다 묶음 (${sd.groups.join(' · ')})`);
+  const folded = await p.evaluate(() => { const it = [...document.querySelectorAll('.src-door .sd-item')].find((x) => x.textContent.includes('殺而剮之')); return it ? { shown: /살을 발라/.test(it.innerText), btn: !!it.querySelector('button[aria-expanded]') } : null; });
+  c.ok(!!folded && !folded.shown && folded.btn, '원전 문에서도 2막 암전의 원문 카드는 접힌 채(누르면 펼침)');
   small = await smallTargets(p);
   c.ok(small.length === 0, `원전 문 화면의 누를 곳 44px 이상${small.length ? ' — ' + small.join(' / ') : ''}`);
   await p.click('.src-door .sd-back');

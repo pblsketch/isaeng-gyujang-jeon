@@ -72,7 +72,7 @@ Codex CLI에 로그인되어 있어야 한다(`~/.codex/auth.json`). 원본 PNG�
 ## 7. 올리기와 공개
 
 - 원격 저장소: `pblsketch/isaeng-gyujang-jeon`(`main`, 비공개). `git push`는 사용자 승인 뒤에만 한다.
-- **공개로 바꾸기 전에**(사용자 승인 뒤) 기획 폴더 `design/`을 git 기록에서까지 지운다 — 지금 커밋에서 지우는 것으로는 이력에 남는다. 이력을 다시 쓴 뒤 `node tests/run-all.mjs rights`로 출판사 이름·추적 파일을 다시 확인하고, 강제 push가 필요하므로 그것도 사용자에게 묻는다.
+- **공개로 바꾸기 전에**(사용자 승인 뒤) 기획 폴더 `design/`을 git 기록에서까지 지운다 — 지금 커밋에서 지우는 것으로는 이력에 남는다. 단 `design/`에는 게임이 계속 쓰는 것이 있으므로 **먼저 옮긴다**: 원문 사본 `design/sources/wikisource-geumosinhwa-raw.txt`(자료 점검 `tests/lib-data.mjs`가 원문 한자를 대조하고, `tools/review-doc.mjs`가 출처로 적는다)를 사용자가 정한 추적 폴더로 옮기고 두 파일의 경로를 함께 고친다. 그림 시안 도구 `tools/drafts.py`의 출력 경로(`design/art-drafts/`)도 정한다. 옮긴 뒤 `node tests/run-all.mjs` **전체**가 종료 0인지 본 다음에 이력을 다시 쓰고, 다시 `node tests/run-all.mjs` 전체로 출판사 이름·추적 파일·원문 대조를 확인한다. 강제 push가 필요하므로 그것도 사용자에게 묻는다.
 - **GitHub Pages**: 공개 전환 뒤 사용자 승인을 받아 저장소 설정에서 `main` 브랜치 루트로 켠다. 빌드 단계가 없으므로 저장소 루트가 그대로 사이트다. 시리즈 게임과 같은 Pages 주소(같은 출처)에 올라가도 저장 열쇠 머리말(`isaeng-gyujang:`)로 나뉜다.
 - 올린 뒤 휴대폰 가로로 주소를 열어 처음부터 결과 화면까지 한 번 가 보고, `?act=3`이 열리는지 본다.
 

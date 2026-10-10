@@ -297,7 +297,7 @@
 
   // ═════════ 원전으로 나가는 문: 게임에 나온 원문·풀이 대목을 장면 차례로 ═════════
   //  흐름 차례(FLOW.order)의 거점마다 단계 차례대로: 단계 글 속 원문 덩이, 담 앞 순간(WALLS — 3막 경계는 할 일 단계 자리),
-  //  옥루춘(OKRU). 같은 원문은 한 번만. 마지막에 「만복사저포기」의 원문. 펼침(fold) 표시는 그대로 둔다(spec 12절).
+  //  옥루춘(OKRU). 같은 원문은 한 번만. 마지막에 「만복사저포기」의 원문. 학생 화면에서 접혀 있던 원문은 여기서도 접는다(민감한 장면 수위).
   R.passages = function () {
     const P = window.PLACES || {}, WL = window.WALLS || {}, O = window.OKRU || {};
     const order = ((window.FLOW || {}).order) || [];
@@ -306,6 +306,8 @@
     const grab = (o, out) => {
       if (Array.isArray(o)) { o.forEach((x) => grab(x, out)); return; }
       if (!o || typeof o !== 'object') return;
+      // 접힌 원문 카드(단계의 fold — 2막 암전의 '살을 발라냄')는 여기서도 접힌 채로(누르면 펼침)
+      if (o.fold && o.quote && typeof o.quote.han === 'string' && !seen.has(o.quote.han)) { seen.add(o.quote.han); out.push(Object.assign({}, o.quote, { fold: true })); }
       if (typeof o.han === 'string' && typeof o.ko === 'string') {
         if (!seen.has(o.han)) { seen.add(o.han); out.push(o); }
         return;

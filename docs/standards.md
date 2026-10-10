@@ -19,7 +19,7 @@
 - 저장소(localStorage)는 `G.save`만 만진다. 다른 파일이 `localStorage`를 직접 읽고 쓰지 않는다.
 - 기록을 바꾸는 규칙은 `G.rules`의 `…On(st, …)` 순수 함수로만 바꾼다. 화면 코드는 그 함수를 부른 뒤 `G.save.write()`를 부른다. 화면 코드가 `st.walls`·`st.blanks` 같은 칸을 직접 고치지 않는다.
 - **확정 기록 칸은 되돌리기 목록에 넣지 않는다**: `G.save.COMMITTED`(walls·propose·blanks·tasks·border·hon·mind·lines·jeongiScene·mbs·skipped·name·words)는 `G.save.snapKeys`(지금 `flags`·`applied`)에 들어가면 안 된다. 반응을 본 시도는 `applyStep`의 한 번만 장부가 아니라 시도 번호 `n`으로 막는다. 새 확정 칸을 만들면 `COMMITTED`와 저장 모양 점검(`G.rules.validSave`)에 함께 더한다.
-- 단계의 효과는 `G.rules.applyStep(step, { place })`로만 적용한다(장부 열쇠 `s:거점:단계`).
+- 단계의 효과는 `G.rules.applyStep(step, { place, key?, decision? })`로만 적용한다(장부 열쇠 `s:거점:단계`).
 - 새 화면이 필요한 단계 종류는 자기 파일에서 `G.steps.register`로 등록한다. 다른 화면 파일의 함수를 직접 부르지 않는다. 두 파일이 같은 종류를 등록할 수 있으면 `G.steps.has`로 먼저 확인한다.
 - `G.app.play`·`G.app.next`를 감쌀 때는 원래 함수를 반드시 부른다(`G.rules.attach`가 이미 감싸 지금 거점과 막을 저장한다).
 - 소리는 `G.audio.play(장면 id)`와 `BGM.tracks`로만 낸다.

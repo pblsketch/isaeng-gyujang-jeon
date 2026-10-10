@@ -86,7 +86,7 @@
 - **혼** `{ id, type:'hon', scene, walk, reveal:{ name, tag, explain }, reason:[원문…], note, setting }`(`act2night`의 `n-hon`): 사건 화면(또는 대화창)을 잠시 걷고(`.hon-away`, 멈춤 `W.busy`를 걷는 동안만 푼다) 맵 위 걷기 판(`.hon-panel[data-phase=walk]`: 발소리 표시 + `walk` + 수단 칸, 혼은 이름 없는 잠긴 칸)을 띄운다 → 80ms마다 `G.world.test.state()`를 읽어 학생 자리가 같은 맵에서 10px 이상 바뀌면 그때만 `honOpenOn(st, { walking:true })` → 사건 화면 가운데 한 장(`.hon-reveal`: 칸이 '혼'으로 드러남 + `.hon-tag` '전기적 요소' + `explain`) → `reason`·`note`·`setting`을 한 줄씩. 이미 열린 기록이면 걷기 판 없이 드러남부터. 시간 제한 없음, 가만히 있으면 열리지 않는다. 맵이 없는 자리(시험 자료)에서는 '걸어 본다' 단추로 대신한다.
 - `G.world.test.state()`는 점검 전용이 아니다 — 혼 판정이 기댄다. 이름·꼴을 바꾸면 혼이 열리지 않는다.
 - **발소리 줄** `{ …대사 줄, foot:1|2|3 }`(줄 종류 `foot`): 그 줄 앞에 발자국 표시(`.hon-foot[data-near]`, 1 멀리 → 3 바로 곁). 글은 그대로.
-- **암전** `{ id, type:'blackout', t, mark, src, quote, fold }`: 삽화를 비우고(`setScene(null)`, `.event.blackout`) 한 줄 + 접힌 원문 카드. `hon.js`가 먼저 등록하고, `tasks.js`는 `G.steps.has('blackout')`이 거짓일 때만 등록한다. 3막 맺음(`e-death`)도 같은 꼴.
+- **암전** `{ id, type:'blackout', t, mark, src, quote, fold }`: 삽화를 비우고(`setScene(null)`, `.event.blackout`) 한 줄 + 접힌 원문 카드. `hon.js`만 등록한다. 3막 맺음(`e-death`)도 같은 꼴.
 
 ## 3막 화면 — `tasks.js`·`okru.js`, 모양은 `css/okru.css`
 
@@ -95,7 +95,7 @@
 - 효과 `fx:{ task:'burial' }` → `taskOn` 확정 + 때 딱지. `fx:{ taskPath:true }` → 넷을 마쳤는데 경계를 안 겪었으면 `G.tasks.openPath()`: `G.world.changeMap(border.map, border.spawn)`으로 경계 몇 걸음 앞으로 **옮기고** `border.path`·`nudge` 두 줄을 보인다. 새 통로를 만드는 것이 아니다 — 입구(`doors`)는 맵을 불러올 때 한 번 만들어지므로 게임 도중 더해도 생기지 않는다.
 - 장사는 `t-burial` 단계의 fx로 먼저 확정해 `t-after`가 '장사 뒤'로 보인다.
 - 때 딱지 `G.tasks.timeOf(st)`: 재회 이튿날 → 장사 뒤(`tasks.burial`) → 서너 해 뒤(`mind`). 거점·맵의 `year`가 getter로 이것을 읽고, 바뀔 때 `G.tasks.syncTime()`이 HUD를 맞춘다.
-- 이어 하기 지도: `b-tasks`의 `map`·`spawn`은 getter로 `G.rules.act3Map(지금 기록)`을 읽는다(남은 할 일이 한 구역에만 있으면 그 구역, 경계만 남으면 경계 가까이, 아니면 최 씨 집).
+- 이어 하기 지도: `b-tasks`의 `map`·`spawn`은 getter로 `G.rules.act3Map(지금 기록)`을 읽는다(남은 할 일이 한 구역에만 있으면 그 구역, 경계만 남으면 경계 가까이, 아니면 최 씨 집). 기록(`st.tasks`)에는 확정됐지만 엔진 장부(`b:act3:b-tasks.<할 일>`)에는 아직 안 끝난 할 일도 남은 것으로 센다 — 장사는 `t-burial`에서 먼저 확정되므로 `t-after` 도중 닫으면 오관산 기슭에서 이어 한다.
 - `okru.js`: 단계 `mind`(`mindOn`, 첫 고르기 포커스, 채점 없음)·`okru`(두 구씩 네 대목 + 회상 `G.okru.recallFor(st, '2-3')` — `0-1`은 2막을 건너뛰었으면 `default`, `2-3`·`4-5`는 `byMind`, `6-7` 고정. 조작 없음, 배경음 `okru` → 끝나면 `G.world.music`).
 
 ## 마무리·결과 — `finale.js`·`result.js`, 모양은 `css/finale.css`·`css/result.css`

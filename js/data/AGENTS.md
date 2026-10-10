@@ -53,5 +53,4 @@
 2. `node tools/review-doc.mjs` — 글 확인 문서를 다시 만든다(엔진 자료의 글을 바꿔도). 다시 만들지 않으면 글 확인 문서 점검이 실패한다.
 3. 화면 글자(한자·기호)가 새로 생겼으면 `python tools/build_fonts.py`.
 4. `node tests/run-all.mjs` 전체 종료 0. 맵·자리·목표를 바꿨으면 그 막의 크롬 점검(`act1`·`act2`·`act3`·`flow`)이 특히 중요하다.
-- 글을 늘리거나 바꾸면 `design/content-inventory.md`의 개수도 맞춘다.
 - 교사가 확인한 글을 `확인됨`으로 바꾸면 글 자료 점검(`tests/check-data.mjs`의 상태 검사)도 함께 바꿔야 통과한다.
