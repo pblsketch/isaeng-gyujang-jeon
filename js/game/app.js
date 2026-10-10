@@ -25,14 +25,14 @@
     if (name === 'credits') return creditsSheet();
     return ui.notReady(HOOK_NAME[name] || name);
   };
-  // 만든 사람·출처(기본): NOTES.credits(만든이·원문 출처 줄)와 CREDITS.sections(소재 출처, js/data/credits.js)
+  // 만든 사람·출처(기본): NOTES.credits(만든이·원문 출처 줄)와 CREDITS.sections(소재 출처 — 배경음은 bgm.js가 더한다), 맨 끝에 CREDITS.fonts(글꼴)
   function creditsSheet() {
     const N = ((window.NOTES || {}).credits) || {};
     const C = window.CREDITS || {};
     return ui.sheet([h('h3', '만든 사람·출처'),
       N.maker ? h('p', N.maker) : null,
       ...[].concat(N.lines || []).map((l) => h('p.small', boldNodes(l))),
-      ...[].concat(C.sections || []).map((sec) => h('div.cr-sec', h('h4', sec.title || ''),
+      ...[].concat(C.sections || [], C.fonts || []).map((sec) => h('div.cr-sec', h('h4', sec.title || ''),
         h('ul', [].concat(sec.items || []).map((it) => h('li', h('b', it.title || ''), it.by ? ' — ' + it.by : '', it.license ? h('small', ' · ' + it.license) : null))))),
     ], undefined, { cls: 'credits-sheet' });
   }

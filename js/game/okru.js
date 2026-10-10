@@ -62,7 +62,7 @@
     }
     if (G.tasks && G.tasks.syncTime) G.tasks.syncTime(); // 때 딱지: 서너 해 뒤
     const o = opts.find((x) => x.id === picked) || {};
-    ctx.main.appendChild(h('div.para.picked-line.show', '▸ ', boldNodes(textOf(o))));
+    ctx.main.appendChild(h('div.para.picked-line.show', '› ', boldNodes(textOf(o))));
     const lines = [step.note].filter(Boolean);
     if (lines.length) await G.steps.lines(lines, ctx);
     else await G.steps.nextButton(ctx, '다음 ▶');

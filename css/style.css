@@ -4,12 +4,14 @@
               ② 쪽빛 판(HUD·띠·아이콘) — 반투명 쪽빛 + 등불빛 실선. 강조는 등불 주황 하나만 쓴다.
    공용 규칙: 누를 곳은 44px 이상(max(44px, …)), 글자 크기 3단계(--fs), 움직임 줄이기(html.reduce-motion·prefers-reduced-motion).
    새 화면의 CSS(wall·hon·okru·finale·result)도 rem과 이 변수들을 쓰면 글자 크기·움직임 줄이기가 저절로 따른다. */
-/* 글꼴: 본문·단추·HUD는 고운바탕(IsaengBatang), 고운바탕에 없는 한자·기호는 Noto Serif KR 부분 글꼴(IsaengHanja)이 채운다.
+/* 글꼴: 본문·단추·HUD는 고운바탕(IsaengBatang), 고운바탕에 없는 한자·기호는 Noto Serif KR 부분 글꼴(IsaengHanja)이, 거기에도 없는 드문 원문 한자는 Noto Serif SC 부분 글꼴(IsaengHanjaExtra)이 채운다.
    제목·거점 이름은 나눔손글씨 붓(IsaengBrush). 모두 게임에 쓰인 글자만 남긴 부분 글꼴 — tools/build_fonts.py */
 @font-face { font-family: 'IsaengBatang'; src: url('../assets/fonts/batang.woff2') format('woff2'); font-weight: 400; font-display: swap; }
 @font-face { font-family: 'IsaengBatang'; src: url('../assets/fonts/batang-bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
 @font-face { font-family: 'IsaengHanja'; src: url('../assets/fonts/hanja.woff2') format('woff2'); font-weight: 400; font-display: swap; }
 @font-face { font-family: 'IsaengHanja'; src: url('../assets/fonts/hanja-bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'IsaengHanjaExtra'; src: url('../assets/fonts/hanja-extra.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'IsaengHanjaExtra'; src: url('../assets/fonts/hanja-extra-bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
 @font-face { font-family: 'IsaengBrush'; src: url('../assets/fonts/brush.woff2') format('woff2'); font-display: swap; }
 
 :root {
@@ -45,7 +47,7 @@
   --shadow: 0 4px 16px rgba(20, 14, 40, .22);
   --radius: .9rem;
   --fs: 1;
-  --serif: 'IsaengBatang', 'IsaengHanja', 'Gowun Batang', 'Noto Serif KR', 'AppleMyungjo', 'Batang', serif;
+  --serif: 'IsaengBatang', 'IsaengHanja', 'IsaengHanjaExtra', 'Gowun Batang', 'Noto Serif KR', 'AppleMyungjo', 'Batang', serif;
   --sans: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', system-ui, sans-serif;
   --brush: 'IsaengBrush', var(--serif);
   /* 한지 결: 그림 파일 대신 코드로 만든 잡음(SVG feTurbulence) */
@@ -193,7 +195,7 @@ b { font-weight: 700; }
 .pl-goal { margin-top: .22rem; padding-top: .22rem; border-top: 1px dashed rgba(255, 216, 138, .35); font-size: .8rem; line-height: 1.35; color: var(--lantern-hi); }
 .pl-goal .k { display: none; }
 .pl-goal strong { font-weight: 700; }
-.pl-goal strong::before { content: '▸ '; }
+.pl-goal strong::before { content: '› '; }
 
 /* 오른쪽 위: 수첩·지도·설정 */
 .hud-tr { position: absolute; right: max(.7rem, env(safe-area-inset-right)); top: max(.6rem, env(safe-area-inset-top)); display: flex; gap: .5rem; align-items: center; }

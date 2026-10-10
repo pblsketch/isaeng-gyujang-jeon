@@ -150,7 +150,7 @@
       const after = R().wallHeight(S(), act);
       ctx.main.innerHTML = '';
       const actText = (W.opts || {})[pick.means];
-      ctx.main.appendChild(h('div.para.picked-line.show', '▸ ', R().meansName(pick.means), actText ? ' — ' + textOf(actText) : ''));
+      ctx.main.appendChild(h('div.para.picked-line.show', '› ', R().meansName(pick.means), actText ? ' — ' + textOf(actText) : ''));
       if (res.pass) return finishPass(step, ctx, res, stage, true);
       const box = reactionBox(res, ctx);
       ctx.main.appendChild(box);
@@ -212,7 +212,7 @@
       if (res.error) continue;
       const after = R().wallHeight(S(), W.act);
       ctx.main.innerHTML = '';
-      ctx.main.appendChild(h('div.para.picked-line.show', '▸ ', boldNodes(textOf((W.labels || {})[a]) || a)));
+      ctx.main.appendChild(h('div.para.picked-line.show', '› ', boldNodes(textOf((W.labels || {})[a]) || a)));
       if (res.pass) return finishPass(step, ctx, res, stage, true);
       const box = reactionBox(res, ctx);
       ctx.main.appendChild(box);

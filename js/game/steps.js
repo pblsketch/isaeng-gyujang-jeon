@@ -224,7 +224,7 @@
     wf.focus(); // 키보드로도 바로 쓸 수 있게(Tab 차례: 입력 칸 → 완료 단추)
     const v = await wf.result;
     ctx.tray(null);
-    ctx.main.appendChild(h('div.para.picked-line.show', '✎ ', v));
+    ctx.main.appendChild(h('div.para.picked-line.show', '— ', v));
     return v;
   };
 
@@ -261,7 +261,7 @@
     });
     list.querySelectorAll('.opt').forEach((b, i) => { b.disabled = true; b.classList.add(opts[i] === pick ? 'picked' : 'dim'); });
     // 고른 것을 글 자리에 남긴다
-    ctx.main.appendChild(h('div.para.picked-line.show', '▸ ', boldNodes(pick.t)));
+    ctx.main.appendChild(h('div.para.picked-line.show', '› ', boldNodes(pick.t)));
     await G.util.wait(260);
     ctx.tray(null);
     steps.apply(Object.assign({}, pick, pick.fx || {}), ctx); // 선택지에 바로 적은 효과(set·flags…)와 fx 안의 효과

@@ -106,7 +106,7 @@
       ctx.tray(null);
     }
     paint();
-    box.appendChild(h('div.para.picked-line.show.fn-line', '✎ ', st.lines.jeongi));
+    box.appendChild(h('div.para.picked-line.show.fn-line', '— ', st.lines.jeongi));
     ui.reveal(box.lastChild);
     await steps.nextButton(ctx, U().toMbs || U().next || '다음 ▶');
   });
@@ -183,7 +183,7 @@
       }
       ctx.tray(null);
     }
-    root.appendChild(h('div.para.picked-line.show.fn-line', '✎ ', st.lines.mbsSame));
+    root.appendChild(h('div.para.picked-line.show.fn-line', '— ', st.lines.mbsSame));
     ui.reveal(root.lastChild);
     await steps.nextButton(ctx, U().toResult || '결과 보기 ▶');
   });
