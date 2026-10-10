@@ -95,13 +95,13 @@
 - 효과 `fx:{ task:'burial' }` → `taskOn` 확정 + 때 딱지. `fx:{ taskPath:true }` → 넷을 마쳤는데 경계를 안 겪었으면 `G.tasks.openPath()`: `G.world.changeMap(border.map, border.spawn)`으로 경계 몇 걸음 앞으로 **옮기고** `border.path`·`nudge` 두 줄을 보인다. 새 통로를 만드는 것이 아니다 — 입구(`doors`)는 맵을 불러올 때 한 번 만들어지므로 게임 도중 더해도 생기지 않는다.
 - 장사는 `t-burial` 단계의 fx로 먼저 확정해 `t-after`가 '장사 뒤'로 보인다.
 - 때 딱지 `G.tasks.timeOf(st)`: 재회 이튿날 → 장사 뒤(`tasks.burial`) → 서너 해 뒤(`mind`). 거점·맵의 `year`가 getter로 이것을 읽고, 바뀔 때 `G.tasks.syncTime()`이 HUD를 맞춘다.
-- 이어 하기 지도: `b-tasks`의 `map`·`spawn`은 getter로 `G.rules.act3Map(지금 기록)`을 읽는다(남은 할 일이 한 구역에만 있으면 그 구역, 경계만 남으면 경계 가까이, 아니면 최 씨 집). 기록(`st.tasks`)에는 확정됐지만 엔진 장부(`b:act3:b-tasks.<할 일>`)에는 아직 안 끝난 할 일도 남은 것으로 센다 — 장사는 `t-burial`에서 먼저 확정되므로 `t-after` 도중 닫으면 오관산 기슭에서 이어 한다.
+- 이어 하기 지도: `b-tasks`의 `map`·`spawn`은 getter로 `G.rules.act3Map(지금 기록)`을 읽는다(남은 할 일이 한 구역에만 있으면 그 구역, 경계만 남으면 경계 가까이, 아니면 최 씨 집). 기록(`st.tasks`)에는 확정됐지만 엔진 장부(`b:act3:b-tasks.<할 일>`)에는 아직 안 끝난 할 일도 남은 것으로 센다 — 장사는 `t-burial`에서 먼저 확정되므로 `t-after` 도중 닫으면 장사가 남은 것으로 세어져, 시 주고받기까지 마쳤다면 오관산 기슭에서, 시가 남았다면 최 씨 집에서 이어 한다.
 - `okru.js`: 단계 `mind`(`mindOn`, 첫 고르기 포커스, 채점 없음)·`okru`(두 구씩 네 대목 + 회상 `G.okru.recallFor(st, '2-3')` — `0-1`은 2막을 건너뛰었으면 `default`, `2-3`·`4-5`는 `byMind`, `6-7` 고정. 조작 없음, 배경음 `okru` → 끝나면 `G.world.music`).
 
 ## 마무리·결과 — `finale.js`·`result.js`, 모양은 `css/finale.css`·`css/result.css`
 
 - `finale.js` `G.finale`: 단계 `jeongi`(2막 장면 다시 보기 → 근거 장면 → 한 줄)·`mbs`(줄거리 → 두 고르기, `mbsOn`으로 기록한 뒤에 사실 → 한 줄). `G.app.hooks.finish = G.finale.finish`: 맺음이 끝나면 기록이 덜 찬 마무리 화면만 거점 'finale'(단계 `f-jeongi`·`f-mbs`)로 펼친 뒤 결과 화면. 배경음 `farewell`.
-- `result.js` `G.result`: 기록 한 벌 `record(st)`을 화면 `fill`과 그림 `layers`가 함께 쓰고, 같은 그리기 함수 `draw(pen, D)`(펜은 rect·line·text 셋)로 화면 SVG와 저장 캔버스·PNG를 만든다. 건너뛴 막은 '하지 않음'. 원전으로 나가는 문 `openDoor()`(대목 모음 `passages()` — 흐름 차례대로 거점·담·옥루춘의 원문+풀이, 주소는 글로만). 그림 저장 파일 이름은 `세번의담_<이름>.png`. 배경음 `result`.
+- `result.js` `G.result`: 기록 한 벌 `record(st)`을 화면 `fill`과 그림 `layers`가 함께 쓰고, 같은 그리기 함수 `draw(pen, D)`(펜은 rect·line·text 셋)로 화면 SVG와 저장 캔버스·PNG를 만든다. 건너뛴 막은 '하지 않음'. 원전으로 나가는 문 `openDoor()`(대목 모음 `passages()` — 흐름 차례대로 거점·담·옥루춘의 원문+풀이, 주소는 글로만). 학생 화면에서 접혀 있던 원문(2막 암전)은 여기서도 접힌 채다 — 암전 단계의 `fold`는 `quote` 밖에 있으므로 `passages()`가 가져온 원문에 옮겨 붙인다. 이것을 빼면 '살을 발라냄'이 펼쳐진 채 보인다. 그림 저장 파일 이름은 `세번의담_<이름>.png`. 배경음 `result`.
 - 결과 화면에 그릴 것을 더하려면 `G.result.layers.push((pen, D, box) => 높이)`, 화면 내용은 `G.result.fill = (bodyEl, st) => { … }`.
 
 ## 흐름 — `app.js`·`main.js`·`js/data/flow.js`
